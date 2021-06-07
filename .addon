@@ -1,0 +1,18 @@
+{
+    "name": "opnmv",
+    "sharedassets": "*.*",
+    
+    "depends": 
+    [
+      "base"
+    ],
+
+    "gamemodes":
+    [
+      {
+        "name": "opnmv",
+        "title": "Open movement",
+        "description": "Hey now!"
+      }
+    ]
+}
