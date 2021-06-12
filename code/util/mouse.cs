@@ -7,17 +7,23 @@ namespace Core
 {
 	public static class MouseInput
 	{
-		public static Vector2 PreviousDelta {get; set;}
-
-		private static float GetConCommand(string command)
+		[ConVar.ClientData( "m_customaccel" )] public static float CustomAccel { get; set; } = 0.0f;
+		[ConVar.ClientData( "m_customaccel_scale" )] public static float CustomAccelScale { get; set; } = 0.04f;
+		[ConVar.ClientData( "m_customaccel_max" )] public static float CustomAccelMax { get; set; } = 0.0f;
+		[ConVar.ClientData( "m_customaccel_exponent" )] public static float CustomAccelExponent { get; set; } = 1.0f;
+		[ConVar.ClientData( "m_rawinput" )] public static bool RawInput { get; set; } = true;
+		[ConVar.ClientData("m_mouseenable")] public static bool MouseEnable { get; set; } = true;
+		[ConVar.ClientData("m_filter")] public static bool MouseFilter { get; set; } = true;
+		[ConVar.ClientData("sensitivity")] public static float Sensitivity { get; set; } = 1.0f;
+		[ConVar.ClientData("m_yaw")] public static float Yaw { get; set; } = 0.022f;
+		[ConVar.ClientData("m_pitch")] public static float Pitch { get; set; } = 0.022f;
+		
+		public static float GetConCommand(string command)
 		{
-			return float.Parse(ConsoleSystem.GetValue(command));
+			return Single.Parse(ConsoleSystem.GetValue(command));
 		}
 
-		/// <summary>
-		/// Smooth mouse delta and cache current delta.
-		/// </summary>
-		private static void GetMouseDelta(ref Vector2 delta_in)
+		private static void GetMouseDelta(ref Vector2 delta_in, ref Vector2 prev_delta)
 		{
 			var mouse_filter = GetConCommand("m_filter") == 1 ? true : false;
 			
@@ -25,11 +31,11 @@ namespace Core
 			if (mouse_filter)
 			{
 				// Average over last two samples
-				delta_in += (PreviousDelta) * 0.5f;
+				delta_in += (prev_delta) * 0.5f;
 			}
 
 			// Latch previous
-			PreviousDelta = delta_in;
+			prev_delta = delta_in;
 		}
 
 		private static void ScaleMouse(ref Vector2 delta)
@@ -89,19 +95,12 @@ namespace Core
 			view_ang = view_ang.WithPitch(MathX.Clamp(view_ang.pitch, -85, 85));
 			return Rotation.LookAt(view_ang.Direction, Vector3.Up);
 		}
-		
-		public static void MouseMove()
-		{
-			Vector2 delta = new Vector2(Input.MouseDelta.x, Input.MouseDelta.y);
-			GetMouseDelta(ref delta);
-			ScaleMouse(ref delta);
-			MovementPlayer.ViewAngle = AdjustView(MovementPlayer.ViewAngle, delta);
-		}
 
-		private static void ResetView()
+		public static void MouseMove(ref Rotation view, Vector2 delta, ref Vector2 prev_delta)
 		{
-			MovementPlayer.ViewAngle = Rotation.LookAt(Vector3.Forward, Vector3.Up);
-			PreviousDelta = new Vector2();
+			GetMouseDelta(ref delta, ref prev_delta);
+			ScaleMouse(ref delta);
+			view = AdjustView(view, delta);
 		}
 	}
 }

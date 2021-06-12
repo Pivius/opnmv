@@ -65,7 +65,7 @@ namespace OMMovement
 
 		public Vector3 WishVel(float strafe_speed)
 		{	
-			Vector3 forward = MovementPlayer.ViewAngle.Forward;
+			Vector3 forward = Input.Rotation.Forward;
 			float forward_speed = Input.Forward * strafe_speed;
 			float side_speed = Input.Left * strafe_speed;
 			Vector3 forward_wish = new Vector3(forward.x, forward.y, 0).Normal * forward_speed;
@@ -76,14 +76,16 @@ namespace OMMovement
 
 		public override void FrameSimulate()
 		{
+			EyeRot = Input.Rotation;
 		}
 
 		public override void Simulate()
 		{
+			
 			EyePosLocal = Vector3.Up * (EyeHeight * Pawn.Scale);
 			EyePosLocal += TraceOffset;
-			EyeRot = MovementPlayer.ViewAngle;
-			
+			EyeRot = Input.Rotation;
+
 			UpdateBBox();
 			RestoreGroundPos();
 
@@ -102,7 +104,7 @@ namespace OMMovement
 				Velocity = Gravity.AddGravity(Properties.Gravity * 0.5f, Velocity);
 			}
 
-			if ( AutoJump ? Input.Down( InputButton.Jump ) : Input.Pressed( InputButton.Jump ) )
+			if ( Properties.AutoJump ? Input.Down( InputButton.Jump ) : Input.Pressed( InputButton.Jump ) )
 			{
 				CheckJumpButton();
 			}

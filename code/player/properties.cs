@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 
 namespace Core
 {
-	public partial class MovementPlayer : Player
+	public partial class MovementPlayer
 	{
-		[Net, Predicted] public static Rotation ViewAngle{get;set;}
+		public Vector2 PreviousDelta {get; set;}
 	}
 }

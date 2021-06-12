@@ -1,3 +1,4 @@
+using System.Numerics;
 using Sandbox;
 using System;
 using OMMovement;
@@ -19,7 +20,7 @@ namespace Core
 		{
 			if (Host.IsServer)
 			{
-				var idealRotation = Rotation.LookAt(MovementPlayer.ViewAngle.Forward.WithZ( 0 ), Vector3.Up);
+				var idealRotation = Rotation.LookAt(Input.Rotation.Forward.WithZ( 0 ), Vector3.Up);
 				DoRotation( idealRotation );
 				DoWalk( idealRotation );
 
@@ -32,7 +33,7 @@ namespace Core
 				SetParam( "b_noclip", noclip );
 				SetParam( "b_swim", Pawn.WaterLevel.Fraction > 0.5f );
 
-				Vector3 aimPos = Pawn.EyePos + MovementPlayer.ViewAngle.Forward * 200;
+				Vector3 aimPos = Pawn.EyePos + Input.Rotation.Forward * 200;
 				Vector3 lookPos = aimPos;
 
 				//
