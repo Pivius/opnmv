@@ -1,17 +1,15 @@
 using Sandbox;
+using OMMovement;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OMCore
+namespace Core
 {
-	partial class MovementPlayer : BasePlayer
+	public partial class MovementPlayer : Player
 	{
-		public override void InitProperties()
-		{
-			movement_mode = OMMovement.MODE.SOURCE;
-		}
+		[Net, Predicted] public static Rotation ViewAngle{get;set;}
 	}
 }

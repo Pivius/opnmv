@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OMCore
+namespace Core
 {
 	[Library("opnmv")]
 	public partial class MovementGame : Sandbox.Game
@@ -16,7 +16,7 @@ namespace OMCore
 			if ( IsServer )
 			{
 				Log.Info( "Game serverside Pass" );
-				hudController = new BaseHUD();
+				//hudController = new BaseHUD();
 			}
 
 			if ( IsClient )
@@ -32,12 +32,10 @@ namespace OMCore
 
 		public override void ClientJoined( Client client )
 		{
+			var player = new MovementPlayer();
 			base.ClientJoined(client);
-
-			var ply = new MovementPlayer();
-
-			client.Pawn = ply;
-			ply.Respawn();
+			client.Pawn = player;
+			player.Respawn();
 		}
 	}
 }

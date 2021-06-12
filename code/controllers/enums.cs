@@ -7,12 +7,4 @@ using System.Threading.Tasks;
 
 namespace OMMovement
 {
-    public enum MODE
-    {
-        SOURCE,
-        VQ3,
-        CPMA,
-        GRAPPLE,
-        PARKOUR
-    }
 }

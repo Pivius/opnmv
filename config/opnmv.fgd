@@ -1,0 +1,8 @@
+// 
+// Core.MovementGame : Sandbox.Game 
+// 
+@PointClass = opnmv : ""
+[
+	targetname(target_source) : "Name" : : "The name that other entities refer to this entity by."
+]
+
