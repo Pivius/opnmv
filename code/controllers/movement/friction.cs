@@ -7,6 +7,8 @@ namespace OMMovement
 {
     public class Friction : AirAccelerate
     {
+		// # Source Movement Friction
+		
 		public virtual Vector3 ApplyFriction(Vector3 velocity, float friction, float stop_speed)
 		{
 			float speed = velocity.Length;

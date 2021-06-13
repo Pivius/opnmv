@@ -26,9 +26,9 @@ namespace OMMovement
 			Unstuck = new Sandbox.Unstuck(this);
 		}
 
-		public override TraceResult TraceBBox( Vector3 start, Vector3 end, float liftFeet = 0.0f )
+		public override TraceResult TraceBBox(Vector3 start, Vector3 end, float liftFeet = 0.0f)
 		{
-			return TraceBBox( start, end, Properties.OBBMins, Properties.OBBMaxs, liftFeet );
+			return TraceBBox(start, end, Properties.OBBMins, Properties.OBBMaxs, liftFeet);
 		}
 
 		public override BBox GetHull()
@@ -36,7 +36,7 @@ namespace OMMovement
 			return new BBox(Properties.OBBMins, Properties.OBBMaxs);
 		}
 
-		public override void SetBBox( Vector3 mins, Vector3 maxs )
+		public override void SetBBox(Vector3 mins, Vector3 maxs)
 		{
 			Properties.OBBMins = mins;
 			Properties.OBBMaxs = maxs;
@@ -47,9 +47,9 @@ namespace OMMovement
 			var mins = Properties.StandMins * Pawn.Scale;
 			var maxs = Properties.StandMaxs * Pawn.Scale;
 			
-			if ( Properties.OBBMins != mins || Properties.OBBMaxs != maxs )
+			if (Properties.OBBMins != mins || Properties.OBBMaxs != maxs)
 			{
-				SetBBox( mins, maxs );
+				SetBBox(mins, maxs);
 			}
 		}
 
@@ -81,7 +81,6 @@ namespace OMMovement
 
 		public override void Simulate()
 		{
-			
 			EyePosLocal = Vector3.Up * (EyeHeight * Pawn.Scale);
 			EyePosLocal += TraceOffset;
 			EyeRot = Input.Rotation;
@@ -89,7 +88,7 @@ namespace OMMovement
 			UpdateBBox();
 			RestoreGroundPos();
 
-			if ( Unstuck.TestAndFix() )
+			if (Unstuck.TestAndFix())
 				return;
 
 			// RunLadderMode
@@ -99,12 +98,12 @@ namespace OMMovement
 			//
 			// Start Gravity
 			//
-			if ( !Swimming && !IsTouchingLadder )
+			if (!Swimming && !IsTouchingLadder)
 			{
 				Velocity = Gravity.AddGravity(Properties.Gravity * 0.5f, Velocity);
 			}
 
-			if ( Properties.AutoJump ? Input.Down( InputButton.Jump ) : Input.Pressed( InputButton.Jump ) )
+			if (Properties.AutoJump ? Input.Down(InputButton.Jump) : Input.Pressed(InputButton.Jump))
 			{
 				CheckJumpButton();
 			}
@@ -113,39 +112,36 @@ namespace OMMovement
 			//  we don't slow when standing still, relative to the conveyor.
 			bool bStartOnGround = GroundEntity != null;
 
-			if ( bStartOnGround )
+			if (bStartOnGround)
 			{
-				Velocity = Velocity.WithZ( 0 );
+				Velocity = Velocity.WithZ(0);
 
-				if ( GroundEntity != null )
+				if (GroundEntity != null)
 				{
 					Velocity = Friction.ApplyFriction(Velocity, Properties.Friction, Properties.StopSpeed);
 				}
 			}
 
-			//
-			// Work out wish velocity.. just take input, rotate it to view, clamp to -1, 1
-			//
 			WishVelocity = WishVel(Properties.MaxSpeed);
 
-			if ( !Swimming && !IsTouchingLadder )
+			if (!Swimming && !IsTouchingLadder)
 			{
-				WishVelocity = WishVelocity.WithZ( 0 );
+				WishVelocity = WishVelocity.WithZ(0);
 			}
 
 			Duck.PreTick();
 			bool bStayOnGround = false;
 
-			if ( Swimming )
+			if (Swimming)
 			{
 				Velocity = Friction.ApplyFriction(Velocity, 1, Properties.StopSpeed);
 				WaterMove();
 			}
-			else if ( IsTouchingLadder )
+			else if (IsTouchingLadder)
 			{
 				LadderMove();
 			}
-			else if ( GroundEntity != null )
+			else if (GroundEntity != null)
 			{
 				bStayOnGround = true;
 				WalkMove();
@@ -155,27 +151,27 @@ namespace OMMovement
 				AirMove();
 			}
 
-			base.CategorizePosition( bStayOnGround );
+			base.CategorizePosition(bStayOnGround);
 
 			// FinishGravity
-			if ( !Swimming && !IsTouchingLadder )
+			if (!Swimming && !IsTouchingLadder)
 			{
 				Velocity = Gravity.AddGravity(Properties.Gravity * 0.5f, Velocity);
 			}
 
 
-			if ( GroundEntity != null )
+			if (GroundEntity != null)
 			{
-				Velocity = Velocity.WithZ( 0 );
+				Velocity = Velocity.WithZ(0);
 			}
 
 			SaveGroundPos();
-			Properties.OldVelocity = this.Velocity;
+			Properties.OldVelocity = Velocity;
 		}
 
 		public override void CheckLadder()
 		{
-			if ( IsTouchingLadder && Input.Pressed( InputButton.Jump ) )
+			if (IsTouchingLadder && Input.Pressed(InputButton.Jump))
 			{
 				Velocity = LadderNormal * 100.0f;
 				IsTouchingLadder = false;
@@ -187,16 +183,16 @@ namespace OMMovement
 			var start = Position;
 			Vector3 end = start + (IsTouchingLadder ? (LadderNormal * -1.0f) : WishVelocity.Normal) * ladderDistance;
 
-			var pm = Trace.Ray( start, end )
-						.Size( Properties.OBBMins, Properties.OBBMaxs )
-						.HitLayer( CollisionLayer.All, false )
-						.HitLayer( CollisionLayer.LADDER, true )
-						.Ignore( Pawn )
+			var pm = Trace.Ray(start, end)
+						.Size(Properties.OBBMins, Properties.OBBMaxs)
+						.HitLayer(CollisionLayer.All, false)
+						.HitLayer(CollisionLayer.LADDER, true)
+						.Ignore(Pawn)
 						.Run();
 
 			IsTouchingLadder = false;
 
-			if ( pm.Hit )
+			if (pm.Hit)
 			{
 				IsTouchingLadder = true;
 				LadderNormal = pm.Normal;
@@ -205,11 +201,11 @@ namespace OMMovement
 
 		public override void TryPlayerMove()
 		{
-			MoveHelper mover = new MoveHelper( Position, Velocity );
-			mover.Trace = mover.Trace.Size( Properties.OBBMins, Properties.OBBMaxs ).Ignore( Pawn );
+			MoveHelper mover = new MoveHelper(Position, Velocity);
+			mover.Trace = mover.Trace.Size(Properties.OBBMins, Properties.OBBMaxs).Ignore(Pawn);
 			mover.MaxStandableAngle = GroundAngle;
 
-			mover.TryMove( Time.Delta );
+			mover.TryMove(Time.Delta);
 
 			Position = mover.Position;
 			Velocity = mover.Velocity;
@@ -217,8 +213,10 @@ namespace OMMovement
 
 		public override void AirMove()
 		{
+			var velocity = Velocity;
 
-			Velocity = AirAccelerate.GetFinalVelocity(WishVelocity, Properties.MaxSpeed, Velocity, Properties.AirAccelerate);;
+			AirAccelerate.Move(ref velocity, Properties, WishVelocity);
+			Velocity = velocity;
 			Velocity += BaseVelocity;
 			TryPlayerMove();
 			Velocity -= BaseVelocity;
@@ -229,7 +227,7 @@ namespace OMMovement
 			var wish_speed = WishVelocity;
 			var wish_dir = wish_speed.Normal;
 
-			Velocity = Accelerate.GetFinalVelocity(WishVelocity * 0.8f, Properties.MaxSpeed, Velocity, Properties.WaterAccelerate);
+			Velocity = Accelerate.GetFinalVelocity(Velocity, WishVelocity * 0.8f, Properties.MaxSpeed, Properties.WaterAccelerate);
 			Velocity += BaseVelocity;
 			TryPlayerMove();
 			Velocity -= BaseVelocity;
@@ -239,30 +237,31 @@ namespace OMMovement
 		{
 			var wishdir = WishVelocity.Normal;
 			var wishspeed = WishVelocity.Length;
+			var velocity = Velocity;
 
-			WishVelocity = WishVelocity.WithZ( 0 );
+			WishVelocity = WishVelocity.WithZ(0);
 			WishVelocity = WishVelocity.Normal * wishspeed;
-			Velocity = Velocity.WithZ( 0 );
-			Velocity = Accelerate.GetFinalVelocity(WishVelocity, Properties.MaxSpeed, Velocity, Properties.Accelerate);
-			Velocity = Velocity.WithZ( 0 );
+			velocity = Velocity.WithZ(0);
+			Accelerate.Move(ref velocity, Properties, WishVelocity);
+			Velocity = velocity.WithZ(0);
 
 			// Add in any base velocity to the current velocity.
 			Velocity += BaseVelocity;
 
 			try
 			{
-				if ( Velocity.Length < 1.0f )
+				if (Velocity.Length < 1.0f)
 				{
 					Velocity = Vector3.Zero;
 					return;
 				}
 
 				// first try just moving to the destination	
-				var dest = (Position + Velocity * Time.Delta).WithZ( Position.z );
+				var dest = (Position + Velocity * Time.Delta).WithZ(Position.z);
 
-				var pm = TraceBBox( Position, dest );
+				var pm = TraceBBox(Position, dest);
 
-				if ( pm.Fraction == 1 )
+				if (pm.Fraction == 1)
 				{
 					Position = pm.EndPos;
 					base.StayOnGround();
@@ -283,13 +282,13 @@ namespace OMMovement
 
 		void RestoreGroundPos()
 		{
-			if ( GroundEntity == null || GroundEntity.IsWorld )
+			if (GroundEntity == null || GroundEntity.IsWorld)
 				return;
 		}
 
 		void SaveGroundPos()
 		{
-			if ( GroundEntity == null || GroundEntity.IsWorld )
+			if (GroundEntity == null || GroundEntity.IsWorld)
 				return;
 		}
 	}
