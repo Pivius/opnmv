@@ -213,10 +213,7 @@ namespace OMMovement
 
 		public override void AirMove()
 		{
-			var velocity = Velocity;
-
-			AirAccelerate.Move(ref velocity, Properties, WishVelocity);
-			Velocity = velocity;
+			Velocity = AirAccelerate.Move(Velocity, Properties, WishVelocity);
 			Velocity += BaseVelocity;
 			TryPlayerMove();
 			Velocity -= BaseVelocity;
@@ -237,13 +234,12 @@ namespace OMMovement
 		{
 			var wishdir = WishVelocity.Normal;
 			var wishspeed = WishVelocity.Length;
-			var velocity = Velocity;
 
 			WishVelocity = WishVelocity.WithZ(0);
 			WishVelocity = WishVelocity.Normal * wishspeed;
-			velocity = Velocity.WithZ(0);
-			Accelerate.Move(ref velocity, Properties, WishVelocity);
-			Velocity = velocity.WithZ(0);
+			Velocity = Velocity.WithZ(0);
+			Velocity = Accelerate.Move(Velocity, Properties, WishVelocity);
+			Velocity = Velocity.WithZ(0);
 
 			// Add in any base velocity to the current velocity.
 			Velocity += BaseVelocity;

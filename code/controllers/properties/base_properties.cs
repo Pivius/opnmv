@@ -13,6 +13,7 @@ namespace OMMovement
 		public float Accelerate{get; set;} = 10.0f;
 		public float WaterAccelerate{get; set;} = 10.0f;
 		public float Friction{get; set;} = 8.0f;
+		public float WaterFriction{get; set;} = 1.0f;
 		public float StopSpeed{get; set;} = 100.0f;
 		public float JumpPower{get; set;} = 220.0f;
 		public float DuckSpeed{get; set;} = 0.3f;
