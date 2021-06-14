@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System;
 using Sandbox;
 using Core;
@@ -11,6 +13,7 @@ namespace OMMovement
 		public Accelerate Accelerate;
 		public Gravity Gravity;
 		public Friction Friction;
+		public Water Water;
 		public Vector3 LadderNormal;
 		public bool IsTouchingLadder = false;
 
@@ -23,6 +26,7 @@ namespace OMMovement
 			Accelerate = new Accelerate();
 			Gravity = new Gravity();
 			Friction = new Friction();
+			Water = new Water();
 			Unstuck = new Sandbox.Unstuck(this);
 		}
 
@@ -46,7 +50,7 @@ namespace OMMovement
 		{
 			var mins = Properties.StandMins * Pawn.Scale;
 			var maxs = Properties.StandMaxs * Pawn.Scale;
-			
+
 			if (Properties.OBBMins != mins || Properties.OBBMaxs != maxs)
 			{
 				SetBBox(mins, maxs);
@@ -74,6 +78,11 @@ namespace OMMovement
 			return forward_wish + side_wish;
 		}
 
+		public Vector3 ClipVelocity(Vector3 velocity, Vector3 normal)
+		{	
+			return velocity - (normal * velocity.Dot(normal));
+		}
+
 		public override void FrameSimulate()
 		{
 			EyeRot = Input.Rotation;
@@ -81,9 +90,9 @@ namespace OMMovement
 
 		public virtual void AddSlopeSpeed()
 		{
-			TraceResult trace = TraceBBox(Position, Position.WithZ(Position.z - 2 ));
+			TraceResult trace = TraceBBox(Position, Position.WithZ(Position.z - 2));
 			Vector3 normal = trace.Normal;
-			
+
 			if (normal.z < 1 && Velocity.z <= 0 && GroundEntity != null && Properties.MoveState == STATE.INAIR)
 			{
 				float dot;
@@ -100,12 +109,18 @@ namespace OMMovement
 			}
 		}
 
+		public virtual float GetViewOffset(bool is_ducked)
+		{
+			return is_ducked ? Properties.DuckViewOffset : Properties.StandViewOffset;
+		}
+
 		public override void Simulate()
 		{
-			EyePosLocal = Vector3.Up * (EyeHeight * Pawn.Scale);
+			var is_ducked = false;
+			EyePosLocal = Vector3.Up * GetViewOffset(false) * Pawn.Scale;
 			EyePosLocal += TraceOffset;
 			EyeRot = Input.Rotation;
-
+	
 			UpdateBBox();
 			RestoreGroundPos();
 
@@ -114,7 +129,7 @@ namespace OMMovement
 
 			// RunLadderMode
 			CheckLadder();
-			Swimming = Pawn.WaterLevel.Fraction > 0.6f;
+			Swimming = Water.CheckWater(Position, Properties.OBBMins, Properties.OBBMaxs, GetViewOffset(is_ducked), Pawn);
 			
 			//
 			// Start Gravity
@@ -124,76 +139,93 @@ namespace OMMovement
 				Velocity = Gravity.AddGravity(Properties.Gravity * 0.5f, Velocity);
 			}
 
-			if (Properties.AutoJump ? Input.Down(InputButton.Jump) : Input.Pressed(InputButton.Jump))
+			if (Water.JumpTime > 0.0f)
 			{
-				CheckJumpButton();
+				Velocity = Water.WaterJump(Velocity);
+				TryPlayerMove();
+				return;
 			}
 
-			
-
-			// Fricion is handled before we add in any base velocity. That way, if we are on a conveyor, 
-			//  we don't slow when standing still, relative to the conveyor.
-			bool bStartOnGround = GroundEntity != null;
-
-			if (bStartOnGround)
+			if (Water.WaterLevel >= WATERLEVEL.Waist)
 			{
-				Velocity = Velocity.WithZ(0);
+				if (Water.WaterLevel == WATERLEVEL.Waist)
+					Velocity = Water.CheckWaterJump(Velocity, Position, Properties, Pawn);
 
-				if (GroundEntity != null)
-				{
-					Velocity = Friction.ApplyFriction(Velocity, Properties.Friction, Properties.StopSpeed);
-				}
-			}
+				if (Velocity.z < 0.0f && Water.JumpTime > 0.0f)
+					Water.JumpTime = 0.0f;
 
-			WishVelocity = WishVel(Properties.MaxSpeed);
+				if (Properties.AutoJump ? Input.Down(InputButton.Jump) : Input.Pressed(InputButton.Jump))
+					CheckJumpButton();
+	
+				Water.Move(this);
+				base.CategorizePosition(OnGround());
 
-			if (!Swimming && !IsTouchingLadder)
-			{
-				WishVelocity = WishVelocity.WithZ(0);
-			}
+				if (OnGround())
+					Velocity = Velocity.WithZ(0);
 
-			Duck.PreTick();
-			bool bStayOnGround = false;
-			
-			if (Swimming)
-			{
-				Velocity = Friction.ApplyFriction(Velocity, 1, Properties.StopSpeed);
-				WaterMove();
 				Properties.MoveState = STATE.WATER;
-			}
-			else if (IsTouchingLadder)
-			{
-				LadderMove();
-				Properties.MoveState = STATE.LADDER;
-			}
-			else if (GroundEntity != null)
-			{
-				bStayOnGround = true;
-				WalkMove();
-				Properties.MoveState = STATE.GROUND;
 			}
 			else
 			{
-				AirMove();
-				Properties.MoveState = STATE.INAIR;
+				
+				if (Properties.AutoJump ? Input.Down(InputButton.Jump) : Input.Pressed(InputButton.Jump))
+					CheckJumpButton();
+
+				bool bStartOnGround = GroundEntity != null;
+
+				if (bStartOnGround)
+				{
+					Velocity = Velocity.WithZ(0);
+
+					if (GroundEntity != null)
+						Velocity = Friction.Move(Velocity, Properties);
+				}
+
+				WishVelocity = WishVel(Properties.MaxSpeed);
+
+				if (!IsTouchingLadder)
+					WishVelocity = WishVelocity.WithZ(0);
+
+				Duck.PreTick();
+				bool bStayOnGround = false;
+				
+				//if (Swimming)
+				//{
+					//Velocity = Friction.ApplyFriction(Velocity, 1, Properties.StopSpeed);
+					//WaterMove();
+					//Properties.MoveState = STATE.WATER;
+				//}
+				if (IsTouchingLadder)
+				{
+					LadderMove();
+					Properties.MoveState = STATE.LADDER;
+				}
+				else if (GroundEntity != null)
+				{
+					bStayOnGround = true;
+					WalkMove();
+					Properties.MoveState = STATE.GROUND;
+				}
+				else
+				{
+					AirMove();
+					Properties.MoveState = STATE.INAIR;
+				}
+
+				base.CategorizePosition(bStayOnGround);
+
+				// FinishGravity
+				if (!IsTouchingLadder)
+					Velocity = Gravity.AddGravity(Properties.Gravity * 0.5f, Velocity);
+
+
+				if (GroundEntity != null)
+				{
+					AddSlopeSpeed();
+					Velocity = Velocity.WithZ(0);
+				}
 			}
-
-			base.CategorizePosition(bStayOnGround);
-
-			// FinishGravity
-			if (!Swimming && !IsTouchingLadder)
-			{
-				Velocity = Gravity.AddGravity(Properties.Gravity * 0.5f, Velocity);
-
-			}
-
-
-			if (GroundEntity != null)
-			{
-				AddSlopeSpeed();
-				Velocity = Velocity.WithZ(0);
-			}
-
+			
 			SaveGroundPos();
 			Properties.OldVelocity = Velocity;
 		}
@@ -227,7 +259,6 @@ namespace OMMovement
 				LadderNormal = pm.Normal;
 			}
 		}
-
 		public override void TryPlayerMove()
 		{
 			MoveHelper mover = new MoveHelper(Position, Velocity);
@@ -247,6 +278,7 @@ namespace OMMovement
 			TryPlayerMove();
 			Velocity -= BaseVelocity;
 		}
+
 
 		public override void WaterMove()
 		{

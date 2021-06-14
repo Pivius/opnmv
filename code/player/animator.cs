@@ -9,8 +9,7 @@ namespace Core
 	{
 		TimeSince TimeSinceFootShuffle = 60;
 		float duck;
-
-
+		
 		public PlayerAnimator()
 		{
 			//Mouse = new SourceMouse();

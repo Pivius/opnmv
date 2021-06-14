@@ -24,7 +24,7 @@ namespace OMMovement
 		public float StepSize{get; set;} = 16.0f;
 		public float FallDamageMultiplier{get; set;} = 0.0563f;
 		public float MaxSpeed{get; set;} = 320.0f;
-		public int MaxClipPlanes{get; set;} = 5;
+		public float StandableAngle{get; set;} = 45;
 		public STATE MoveState{get; set;} = 0;
 		public bool AutoJump{get; set;} = true;
 		public bool IsDucking{get; set;} = false;
@@ -40,6 +40,8 @@ namespace OMMovement
 		public Vector3 StandMaxs{get; set;} = new Vector3(16, 16, 72);
 		public Vector3 DuckMaxs{get; set;} = new Vector3(16, 16, 32);
 		public Vector3 OldVelocity {get; set;}
+
+		public float DIST_EPSILON{get; private set;} = 0.03125f;
 
 		public BaseProperties()
 		{

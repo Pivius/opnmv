@@ -33,9 +33,9 @@ namespace OMMovement
 			return velocity + accel_speed;
 		}
 
-		public virtual Vector3 Move(Vector3 velocity, BaseProperties Properties, Vector3 strafe_vel)
+		public virtual Vector3 Move(Vector3 velocity, BaseProperties props, Vector3 strafe_vel = new Vector3(), Vector3 position = new Vector3())
 		{
-			return GetFinalVelocity(velocity, strafe_vel, Properties.MaxSpeed, Properties.AirAccelerate);
+			return GetFinalVelocity(velocity, strafe_vel, props.MaxSpeed, props.AirAccelerate);
 		}
 	}
 }

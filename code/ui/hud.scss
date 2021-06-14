@@ -1,0 +1,18 @@
+Velocity {
+    position: absolute;
+    background-color: rgba( black, 0.5 );
+    border-radius: 3px;
+    right: 100px;
+    bottom: 48px;
+    font-size: 40px;
+    font-weight: bold;
+    color: white;
+    height: 80px;
+    padding: 0 20px;
+    align-items: center;
+
+    .icon {
+        font-size: 30px;
+        padding-right: 10px;
+    }
+}

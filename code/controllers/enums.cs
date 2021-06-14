@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 
 namespace OMMovement
 {
-	public enum MODE : ulong
+	public enum MODE : int
 	{
-		SOURCE = 1,
-		VQ3 = 2,
-		CPMA = 4,
-		GRAPPLE = 8,
-		PARKOUR = 16
+		SOURCE = 0,
+		VQ3,
+		CPMA,
+		GRAPPLE,
+		PARKOUR
 	}
 
 	public enum STATE : int
@@ -24,7 +24,7 @@ namespace OMMovement
 		WATER
 	}
 
-		public enum WATERLEVEL : ulong
+		public enum WATERLEVEL : int
 	{
 		NotInWater = 0,
 		Feet,

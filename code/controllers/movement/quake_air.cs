@@ -61,7 +61,7 @@ namespace OMMovement
 		}
 
 		// Defaul Max Speed - 300
-		public virtual Vector3 Move(Vector3 velocity, CPMAProperties props, Vector3 strafe_vel)
+		public virtual Vector3 Move(Vector3 velocity, CPMAProperties props, Vector3 strafe_vel = new Vector3(), Vector3 position = new Vector3())
 		{
 			float strafe_vel_length = CapWishSpeed(strafe_vel.Length, props.MaxSpeed);
 			

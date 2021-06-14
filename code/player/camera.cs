@@ -11,7 +11,6 @@ namespace Core
 	{
 		[ConVar.ClientData("fov_desired")] public static float FOV { get; set; } = 90f;
 		Vector3 lastPos;
-
 		public override void Activated()
 		{
 			var pawn = Local.Pawn;
@@ -37,7 +36,6 @@ namespace Core
 			{
 				Pos = eyePos;
 			}
-			//MouseInput.MouseMove();
 
 			Rot = pawn.EyeRot;
 

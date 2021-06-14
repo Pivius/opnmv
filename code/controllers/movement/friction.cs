@@ -5,7 +5,7 @@ using Sandbox;
 
 namespace OMMovement
 {
-    public class Friction : AirAccelerate
+    public class Friction : Accelerate
     {
 		// # Source Movement Friction
 		
@@ -23,6 +23,11 @@ namespace OMMovement
 			}
 
 			return velocity;
+		}
+
+		public override Vector3 Move(Vector3 velocity, BaseProperties props, Vector3 strafe_vel = new Vector3(), Vector3 position = new Vector3())
+		{
+			return ApplyFriction(velocity, props.Friction, props.StopSpeed);
 		}
     }
 }

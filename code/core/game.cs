@@ -16,7 +16,7 @@ namespace Core
 			if ( IsServer )
 			{
 				Log.Info( "Game serverside Pass" );
-				//hudController = new BaseHUD();
+				new OMHUD.HudEntity();
 			}
 
 			if ( IsClient )
