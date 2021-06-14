@@ -25,7 +25,7 @@ namespace OMMovement
 		public float FallDamageMultiplier{get; set;} = 0.0563f;
 		public float MaxSpeed{get; set;} = 320.0f;
 		public int MaxClipPlanes{get; set;} = 5;
-		public int MoveType{get; set;} = 0;
+		public STATE MoveState{get; set;} = 0;
 		public bool AutoJump{get; set;} = true;
 		public bool IsDucking{get; set;} = false;
 		public bool CanWalk{get; set;} = true;

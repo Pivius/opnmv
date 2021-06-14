@@ -79,6 +79,27 @@ namespace OMMovement
 			EyeRot = Input.Rotation;
 		}
 
+		public virtual void AddSlopeSpeed()
+		{
+			TraceResult trace = TraceBBox(Position, Position.WithZ(Position.z - 2 ));
+			Vector3 normal = trace.Normal;
+			
+			if (normal.z < 1 && Velocity.z <= 0 && GroundEntity != null && Properties.MoveState == STATE.INAIR)
+			{
+				float dot;
+
+				Velocity -= (normal * Velocity.Dot(normal));
+				dot = Velocity.Dot(normal);
+
+				if (dot < 0)
+				{
+					Velocity -= (normal * dot);
+					
+				}
+				
+			}
+		}
+
 		public override void Simulate()
 		{
 			EyePosLocal = Vector3.Up * (EyeHeight * Pawn.Scale);
@@ -94,7 +115,7 @@ namespace OMMovement
 			// RunLadderMode
 			CheckLadder();
 			Swimming = Pawn.WaterLevel.Fraction > 0.6f;
-
+			
 			//
 			// Start Gravity
 			//
@@ -107,6 +128,8 @@ namespace OMMovement
 			{
 				CheckJumpButton();
 			}
+
+			
 
 			// Fricion is handled before we add in any base velocity. That way, if we are on a conveyor, 
 			//  we don't slow when standing still, relative to the conveyor.
@@ -131,24 +154,28 @@ namespace OMMovement
 
 			Duck.PreTick();
 			bool bStayOnGround = false;
-
+			
 			if (Swimming)
 			{
 				Velocity = Friction.ApplyFriction(Velocity, 1, Properties.StopSpeed);
 				WaterMove();
+				Properties.MoveState = STATE.WATER;
 			}
 			else if (IsTouchingLadder)
 			{
 				LadderMove();
+				Properties.MoveState = STATE.LADDER;
 			}
 			else if (GroundEntity != null)
 			{
 				bStayOnGround = true;
 				WalkMove();
+				Properties.MoveState = STATE.GROUND;
 			}
 			else
 			{
 				AirMove();
+				Properties.MoveState = STATE.INAIR;
 			}
 
 			base.CategorizePosition(bStayOnGround);
@@ -157,11 +184,13 @@ namespace OMMovement
 			if (!Swimming && !IsTouchingLadder)
 			{
 				Velocity = Gravity.AddGravity(Properties.Gravity * 0.5f, Velocity);
+
 			}
 
 
 			if (GroundEntity != null)
 			{
+				AddSlopeSpeed();
 				Velocity = Velocity.WithZ(0);
 			}
 
