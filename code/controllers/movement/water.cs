@@ -1,3 +1,4 @@
+using System;
 using Sandbox;
 using Core;
 
@@ -134,27 +135,27 @@ namespace OMMovement
 			return InWater();
 		}
 
-		protected Vector3 GetSwimVel(float max_move, float max_speed)
+		protected Vector3 GetSwimVel(float max_speed)
 		{
 			Vector3 forward = Input.Rotation.Forward;
 			Vector3 side = Input.Rotation.Left;
-			float forward_speed = Input.Forward * max_move;
-			float side_speed = Input.Left * max_move;
-			float up_speed = Input.Up * max_move;
+			float forward_speed = Input.Forward * max_speed;
+			float side_speed = Input.Left * max_speed;
+			float up_speed = Input.Up * max_speed;
 			Vector3 strafe_vel = (forward * forward_speed) + (side * side_speed);
 			
 			if (Input.Down(InputButton.Jump))
 			{
-				strafe_vel = strafe_vel.WithZ(strafe_vel.z + max_speed);
+				strafe_vel.z += max_speed;
 			}
 			// Sinking after no other movement occurs
 			else if (forward_speed == 0 && side_speed == 0 && up_speed == 0)
 			{
-				strafe_vel = strafe_vel.WithZ(strafe_vel.z - SinkSpeed);
+				strafe_vel.z -= SinkSpeed;
 			}
 			else
 			{
-				strafe_vel = strafe_vel.WithZ(strafe_vel.z + up_speed + CapWishSpeed(forward_speed * forward.z * 2.0f, max_speed));
+				strafe_vel.z += up_speed + CapWishSpeed(forward_speed * forward.z * 2.0f, max_speed);
 			}
 
 			return strafe_vel;
@@ -185,7 +186,7 @@ namespace OMMovement
 			Entity pawn = controller.Pawn;
 			Vector3 velocity = controller.Velocity;
 			Vector3 position = controller.Position;
-			Vector3 strafe_vel = GetSwimVel(props.MaxMove, props.MaxSpeed);
+			Vector3 strafe_vel = GetSwimVel(props.MaxSpeed);
 			Vector3 strafe_dir = strafe_vel.Normal;
 			Vector3 start_trace;
 			Vector3 end_trace;
@@ -194,15 +195,19 @@ namespace OMMovement
 			float speed = velocity.Length;
 			float new_speed = GetNewSpeed(speed, props.WaterFriction, ref velocity);
 			float strafe_vel_length = CapWishSpeed(strafe_vel.Length, props.MaxSpeed) * slow_mod;
-			
+
 			// water acceleration
 			if (strafe_vel_length >= 0.1f)
 			{
-				float add_speed = strafe_vel_length - new_speed;
-				
-				velocity += GetAccelSpeed(strafe_dir, strafe_vel_length, add_speed, props.WaterAccelerate);
+				float add_speed = (strafe_vel_length - new_speed);
+
+				if (add_speed <= 0)
+					add_speed = (strafe_vel_length - new_speed) - velocity.Dot(strafe_dir);
+
+				float accel_speed = CapWishSpeed(props.WaterAccelerate * strafe_vel_length * Time.Delta, add_speed);
+				velocity += accel_speed * strafe_dir;
 			}
-		
+
 			velocity += controller.BaseVelocity;
 			end_trace = position + velocity * Time.Delta; 
 			trace = TraceUtil.PlayerBBox(position, end_trace, props.OBBMins, props.OBBMaxs, pawn);
@@ -215,7 +220,7 @@ namespace OMMovement
 					start_trace.WithZ(start_trace.z + props.StepSize + 1);
 				
 				trace = TraceUtil.PlayerBBox(start_trace, end_trace, props.OBBMins, props.OBBMaxs, pawn);
-				
+
 				if (!trace.StartedSolid)
 				{	
 					//float stepDist = trace.EndPos.z - pos.z;
