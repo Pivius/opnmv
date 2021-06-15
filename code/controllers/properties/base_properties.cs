@@ -8,6 +8,7 @@ namespace OMMovement
 		public float DefaulSpeed{get; set;} = 190.0f;
 		public float RunSpeed{get; set;} = 320.0f;
 		public float WalkSpeed{get; set;} = 150.0f;
+		public float SwimSpeed{get; set;} = 250.0f;
 		public float Gravity{get; set;} = 800.0f;
 		public float AirAccelerate{get; set;} = 100.0f;
 		public float Accelerate{get; set;} = 10.0f;
@@ -25,6 +26,7 @@ namespace OMMovement
 		public float FallDamageMultiplier{get; set;} = 0.0563f;
 		public float MaxSpeed{get; set;} = 320.0f;
 		public float StandableAngle{get; set;} = 45;
+		public float MaxMove{get; set;} = 10000.0f;
 		public STATE MoveState{get; set;} = 0;
 		public bool AutoJump{get; set;} = true;
 		public bool IsDucking{get; set;} = false;

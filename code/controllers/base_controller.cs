@@ -181,7 +181,7 @@ namespace OMMovement
 						Velocity = Friction.Move(Velocity, Properties);
 				}
 
-				WishVelocity = WishVel(Properties.MaxSpeed);
+				WishVelocity = WishVel(Properties.MaxMove);
 
 				if (!IsTouchingLadder)
 					WishVelocity = WishVelocity.WithZ(0);
