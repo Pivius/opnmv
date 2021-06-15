@@ -14,6 +14,7 @@ namespace OMMovement
 		public Gravity Gravity;
 		public Friction Friction;
 		public Water Water;
+		public Duck Duck;
 		public Vector3 LadderNormal;
 		public bool IsTouchingLadder = false;
 
@@ -21,7 +22,7 @@ namespace OMMovement
 		{
 			
 			Properties = new BaseProperties();
-			Duck = new Sandbox.Duck(this);
+			Duck = new Duck(this);
 			AirAccelerate = new AirAccelerate();
 			Accelerate = new Accelerate();
 			Gravity = new Gravity();
@@ -40,6 +41,36 @@ namespace OMMovement
 			return new BBox(Properties.OBBMins, Properties.OBBMaxs);
 		}
 
+		public virtual Vector3 GetPlayerMins(bool is_ducked)
+		{
+			return is_ducked ? Properties.DuckMins : Properties.StandMins;
+		}
+
+		public virtual Vector3 GetPlayerMaxs(bool is_ducked)
+		{
+			return is_ducked ? Properties.DuckMaxs : Properties.StandMaxs;
+		}
+
+		public virtual Vector3 GetPlayerMins()
+		{
+			return Duck.IsDucked ? Properties.DuckMins : Properties.StandMins;
+		}
+
+		public virtual Vector3 GetPlayerMaxs()
+		{
+			return Duck.IsDucked ? Properties.DuckMaxs : Properties.StandMaxs;
+		}
+
+		public virtual float GetPlayerViewOffset(bool is_ducked)
+		{
+			return is_ducked ? Properties.DuckViewOffset : Properties.StandViewOffset;
+		}
+
+		public virtual float GetViewOffset()
+		{
+			return Properties.ViewOffset;
+		}
+
 		public override void SetBBox(Vector3 mins, Vector3 maxs)
 		{
 			Properties.OBBMins = mins;
@@ -48,8 +79,8 @@ namespace OMMovement
 
 		public override void UpdateBBox()
 		{
-			var mins = Properties.StandMins * Pawn.Scale;
-			var maxs = Properties.StandMaxs * Pawn.Scale;
+			var mins = GetPlayerMins() * Pawn.Scale;
+			var maxs = GetPlayerMaxs() * Pawn.Scale;
 
 			if (Properties.OBBMins != mins || Properties.OBBMaxs != maxs)
 			{
@@ -109,27 +140,23 @@ namespace OMMovement
 			}
 		}
 
-		public virtual float GetViewOffset(bool is_ducked)
-		{
-			return is_ducked ? Properties.DuckViewOffset : Properties.StandViewOffset;
-		}
-
 		public override void Simulate()
 		{
 			var is_ducked = false;
-			EyePosLocal = Vector3.Up * GetViewOffset(false) * Pawn.Scale;
+			EyePosLocal = Vector3.Up * GetViewOffset() * Pawn.Scale;
 			EyePosLocal += TraceOffset;
 			EyeRot = Input.Rotation;
 	
 			UpdateBBox();
 			RestoreGroundPos();
-
+			Duck.UpdateDuckJumpEyeOffset();
+			Duck.TryDuck();
 			if (Unstuck.TestAndFix())
 				return;
 
 			// RunLadderMode
 			CheckLadder();
-			Swimming = Water.CheckWater(Position, Properties.OBBMins, Properties.OBBMaxs, GetViewOffset(is_ducked), Pawn);
+			Swimming = Water.CheckWater(Position, Properties.OBBMins, Properties.OBBMaxs, GetViewOffset(), Pawn);
 			
 			//
 			// Start Gravity
@@ -186,7 +213,6 @@ namespace OMMovement
 				if (!IsTouchingLadder)
 					WishVelocity = WishVelocity.WithZ(0);
 
-				Duck.PreTick();
 				bool bStayOnGround = false;
 				
 				//if (Swimming)
@@ -228,6 +254,26 @@ namespace OMMovement
 			
 			SaveGroundPos();
 			Properties.OldVelocity = Velocity;
+		}
+
+	public virtual void CheckJumpButton()
+			{
+
+			if ( GroundEntity == null )
+				return;
+
+			ClearGroundEntity();
+
+			float flMul = 268.3281572999747f * 1.2f;
+			float startz = Velocity.z;
+
+			Velocity = Velocity.WithZ( startz + flMul );
+			Velocity -= new Vector3( 0, 0, Properties.Gravity * 0.5f ) * Time.Delta;
+			Duck.JumpTime = 0.0f;
+			Duck.InDuckJump = false;
+
+			AddEvent( "jump" );
+
 		}
 
 		public override void CheckLadder()

@@ -16,7 +16,7 @@ namespace OMMovement
 		{
 			
 			Properties = new QuakeProperties();
-			Duck = new Sandbox.Duck(this);
+			Duck = new Duck(this);
 			AirAccelerate = new QuakeAirAccelerate();
 			Accelerate = new Accelerate();
 			Gravity = new Gravity();
