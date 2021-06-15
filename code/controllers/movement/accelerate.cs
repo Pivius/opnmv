@@ -13,9 +13,9 @@ namespace OMMovement
 			return length - velocity.Dot(wish_dir);
 		}
 
-		public override Vector3 Move(Vector3 velocity, BaseProperties props, Vector3 strafe_vel = new Vector3(), Vector3 position = new Vector3())
+		public override void Move(MovementController controller, Vector3 strafe_vel = new Vector3())
 		{
-			return GetFinalVelocity(velocity, strafe_vel, props.MaxSpeed, props.Accelerate);
+			controller.Velocity = GetFinalVelocity(controller.Velocity, strafe_vel, controller.GetWalkSpeed(), controller.Properties.Accelerate);
 		}
     }
 }

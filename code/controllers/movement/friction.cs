@@ -25,9 +25,9 @@ namespace OMMovement
 			return velocity;
 		}
 
-		public override Vector3 Move(Vector3 velocity, BaseProperties props, Vector3 strafe_vel = new Vector3(), Vector3 position = new Vector3())
+		public override void Move(MovementController controller, Vector3 strafe_vel = new Vector3())
 		{
-			return ApplyFriction(velocity, props.Friction, props.StopSpeed);
+			controller.Velocity = ApplyFriction(controller.Velocity, controller.Properties.Friction, controller.Properties.StopSpeed);
 		}
     }
 }

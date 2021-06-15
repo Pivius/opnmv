@@ -93,6 +93,13 @@ namespace OMMovement
 			return GroundEntity != null;
 		}
 
+		public float GetWalkSpeed()
+		{
+			float walk_speed = Input.Down(InputButton.Walk) ? Properties.WalkSpeed : (Input.Down(InputButton.Run) ? Properties.RunSpeed : Properties.DefaultSpeed);
+
+			return Duck.IsDucked ? walk_speed * (Properties.DuckedWalkSpeed/Properties.DefaultSpeed) : walk_speed;
+		}
+
 		public float FallDamage()
 		{
 			return MathF.Max(Velocity.z - 580.0f, 0) * Properties.FallDamageMultiplier;
@@ -205,7 +212,7 @@ namespace OMMovement
 					Velocity = Velocity.WithZ(0);
 
 					if (GroundEntity != null)
-						Velocity = Friction.Move(Velocity, Properties);
+						Friction.Move(this);
 				}
 
 				WishVelocity = WishVel(Properties.MaxMove);
@@ -259,6 +266,24 @@ namespace OMMovement
 	public virtual void CheckJumpButton()
 			{
 
+			if (Water.JumpTime > 0.0f)
+			{
+				Water.JumpTime -= Time.Delta;
+
+				if (Water.JumpTime < 0.0f)
+					Water.JumpTime = 0;
+
+				return;
+			}
+			
+			if (Water.WaterLevel >= WATERLEVEL.Waist)
+			{
+				ClearGroundEntity();
+				Velocity = Velocity.WithZ(100);
+
+				return;
+			}
+			
 			if ( GroundEntity == null )
 				return;
 
@@ -319,19 +344,7 @@ namespace OMMovement
 
 		public override void AirMove()
 		{
-			Velocity = AirAccelerate.Move(Velocity, Properties, WishVelocity);
-			Velocity += BaseVelocity;
-			TryPlayerMove();
-			Velocity -= BaseVelocity;
-		}
-
-
-		public override void WaterMove()
-		{
-			var wish_speed = WishVelocity;
-			var wish_dir = wish_speed.Normal;
-
-			Velocity = Accelerate.GetFinalVelocity(Velocity, WishVelocity * 0.8f, Properties.MaxSpeed, Properties.WaterAccelerate);
+			AirAccelerate.Move(this, WishVelocity);
 			Velocity += BaseVelocity;
 			TryPlayerMove();
 			Velocity -= BaseVelocity;
@@ -345,7 +358,7 @@ namespace OMMovement
 			WishVelocity = WishVelocity.WithZ(0);
 			WishVelocity = WishVelocity.Normal * wishspeed;
 			Velocity = Velocity.WithZ(0);
-			Velocity = Accelerate.Move(Velocity, Properties, WishVelocity);
+			Accelerate.Move(this, WishVelocity);
 			Velocity = Velocity.WithZ(0);
 
 			// Add in any base velocity to the current velocity.

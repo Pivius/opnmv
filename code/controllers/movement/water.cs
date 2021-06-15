@@ -9,8 +9,9 @@ namespace OMMovement
 		public float JumpTime {get; set;}
 		public Vector3 JumpVel {get; set;}
 		public float EntryTime {get; set;}
-		public float JumpHeight {get; private set;} = 8.0f;
-		public float SinkSpeed {get; set;} = 60.0f;
+		public float MaxJumpLedge {get; private set;} = 8.0f;
+		public float SinkSpeed {get; private set;} = 60.0f;
+		public float JumpHeight {get; set;} = 256.0f;
 		public WATERLEVEL WaterLevel {get; set;} = 0;
 		public WATERLEVEL OldWaterLevel {get; set;} = 0;
 
@@ -38,7 +39,7 @@ namespace OMMovement
 						if (trace.Fraction < 1.0f)
 						{
 							
-							trace_start = trace_start.WithZ(position.z + props.ViewOffset + JumpHeight); 
+							trace_start = trace_start.WithZ(position.z + props.ViewOffset + MaxJumpLedge); 
 							trace_end = trace_start + flat_forward * 24.0f;
 							JumpVel = trace.Normal * -50.0f;
 							trace = TraceUtil.PlayerBBox(trace_start, trace_end, props.OBBMins, props.OBBMaxs, pawn);
@@ -53,8 +54,8 @@ namespace OMMovement
 
 								if (trace.Fraction < 1.0f && trace.Normal.z >= 0.7f)
 								{
-									velocity = velocity.WithZ(300.0f); // Push Up
-									JumpTime = 200.0f; // Do this for .2 seconds
+									velocity = velocity.WithZ(JumpHeight); // Push Up
+									JumpTime = 2000.0f; // Do this for .2 seconds
 								}
 							}
 						}
@@ -180,21 +181,20 @@ namespace OMMovement
 			return new_length;
 		}
 
-		public virtual void Move(MovementController controller)
+		public override void Move(MovementController controller, Vector3 strafe_vel = new Vector3())
 		{
 			BaseProperties props = controller.Properties;
+			strafe_vel = GetSwimVel(props.MaxSpeed);
 			Entity pawn = controller.Pawn;
 			Vector3 velocity = controller.Velocity;
 			Vector3 position = controller.Position;
-			Vector3 strafe_vel = GetSwimVel(props.MaxSpeed);
 			Vector3 strafe_dir = strafe_vel.Normal;
 			Vector3 start_trace;
 			Vector3 end_trace;
 			TraceResult trace;
-			float slow_mod = 0.8f;
 			float speed = velocity.Length;
 			float new_speed = GetNewSpeed(speed, props.WaterFriction, ref velocity);
-			float strafe_vel_length = CapWishSpeed(strafe_vel.Length, props.MaxSpeed) * slow_mod;
+			float strafe_vel_length = CapWishSpeed(strafe_vel.Length, props.SwimSpeed);
 
 			// water acceleration
 			if (strafe_vel_length >= 0.1f)

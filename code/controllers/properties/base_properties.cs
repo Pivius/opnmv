@@ -5,9 +5,10 @@ namespace OMMovement
 {
 	public class BaseProperties
 	{
-		public float DefaulSpeed{get; set;} = 190.0f;
+		public float DefaultSpeed{get; set;} = 190.0f;
 		public float RunSpeed{get; set;} = 320.0f;
 		public float WalkSpeed{get; set;} = 150.0f;
+		public float DuckedWalkSpeed{get; set;} = 150.0f;
 		public float SwimSpeed{get; set;} = 250.0f;
 		public float Gravity{get; set;} = 800.0f;
 		public float AirAccelerate{get; set;} = 100.0f;
