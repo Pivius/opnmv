@@ -8,8 +8,9 @@ namespace OMHUD
 		{
 			if ( IsClient )
 			{
-				RootPanel.StyleSheet.Load( "/ui/hud.scss" );
-				RootPanel.AddChild<Velocity>();
+				RootPanel.StyleSheet.Load( "/ui/hudentity.scss" );
+				RootPanel.AddChild<HUDModule>();
+				//RootPanel.AddChild<Velocity>();
 			}
 		}
 	}
