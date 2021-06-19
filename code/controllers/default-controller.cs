@@ -7,12 +7,11 @@ using System.Threading.Tasks;
 
 namespace OMMovement
 {
-	public class QuakeController : MovementController
+	public class DefaultController : MovementController
 	{
-		public QuakeController()
+
+		public DefaultController()
 		{
-			Properties = new QuakeProperties();
-			AirAccelerate = new QuakeAirAccelerate();
 		}
 
 		public override void Simulate()

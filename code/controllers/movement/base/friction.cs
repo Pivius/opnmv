@@ -5,8 +5,8 @@ using Sandbox;
 
 namespace OMMovement
 {
-    public class Friction : Accelerate
-    {
+	public class Friction : Accelerate
+	{
 		// # Source Movement Friction
 		
 		public virtual Vector3 ApplyFriction(Vector3 velocity, float friction, float stop_speed)
@@ -29,5 +29,5 @@ namespace OMMovement
 		{
 			controller.Velocity = ApplyFriction(controller.Velocity, controller.Properties.Friction, controller.Properties.StopSpeed);
 		}
-    }
+	}
 }

@@ -4,8 +4,10 @@ using Core;
 
 namespace OMMovement
 {
-    public class Water : Accelerate
-    {
+	public class Water : Accelerate
+	{
+		// # Source Water Movement
+
 		public float JumpTime {get; set;}
 		public Vector3 JumpVel {get; set;}
 		public float EntryTime {get; set;}
@@ -17,33 +19,28 @@ namespace OMMovement
 
 		public virtual Vector3 CheckWaterJump(Vector3 velocity, Vector3 position, MovementController controller)
 		{
-			// Already water jumping.
-			if (JumpTime == 0)
+			if (JumpTime == 0) // Already water jumping.
 			{
-			// Don't hop out if we just jumped in
 				if (velocity.z >= -180.0f) // only hop out if we are moving up
 				{
-					var props = controller.Properties;
 					Vector3 forward = Input.Rotation.Forward;
-					Vector3	flat_forward = forward.WithZ(0).Normal;
+					Vector3	view_dir = forward.WithZ(0).Normal;
 					Vector3	flat_velocity = velocity.WithZ(0);
 
-					// Are we backing into water from steps or something?  If so, don't pop forward
-					if (flat_velocity.Length != 0.0f && (flat_velocity.Dot(flat_forward) >= 0.0f))
+					// Are we backing into water from steps or something? If so, don't pop forward
+					if (flat_velocity.Length != 0.0f && (flat_velocity.Dot(view_dir) >= 0.0f))
 					{
 						// Start line trace at waist height (using the center of the player for this here)
-						var trace_start = position + (props.OBBMins + props.OBBMaxs) * 0.5f;
-						var trace_end = trace_start + flat_forward * 24.0f; //VectorMA( vecStart, 24.0f, flatforward, vecEnd );
+						var trace_start = position + (controller.GetPlayerMins() + controller.GetPlayerMaxs()) * 0.5f;
+						var trace_end = trace_start + (view_dir * 24.0f);
 						var trace = TraceUtil.PlayerBBox(trace_start, trace_end, controller);
 						
 						if (trace.Fraction < 1.0f) // solid at waist
 						{
-							
-							trace_start = trace_start.WithZ(position.z + props.ViewOffset + MaxJumpLedge); 
-							trace_end = trace_start + flat_forward * 24.0f;
+							trace_start = trace_start.WithZ(position.z + controller.Properties.ViewOffset + MaxJumpLedge); 
+							trace_end = trace_start + (view_dir * 24.0f);
 							JumpVel = trace.Normal * -50.0f;
 							trace = TraceUtil.PlayerBBox(trace_start, trace_end, controller);
-
 							
 							if (trace.Fraction == 1.0f) // open at eye level
 							{
@@ -54,7 +51,7 @@ namespace OMMovement
 								if (trace.Fraction < 1.0f && trace.Normal.z >= 0.7f)
 								{
 									velocity = velocity.WithZ(JumpHeight); // Push Up
-									JumpTime = 2000.0f; // Do this for .2 seconds
+									JumpTime = 2000.0f; // Do this for 2 seconds
 								}
 							}
 						}
@@ -122,7 +119,7 @@ namespace OMMovement
 						.HitLayer( CollisionLayer.Water, true )
 						.Ignore(pawn)
 						.Run();
-					// Now check the eye position.  (view_ofs is relative to the origin)
+					// Now check the eye position. (view_ofs is relative to the origin)
 					if (point.Fraction == 0.0f)
 						WaterLevel = WATERLEVEL.Eyes;
 				}

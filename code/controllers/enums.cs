@@ -7,15 +7,6 @@ using System.Threading.Tasks;
 
 namespace OMMovement
 {
-	public enum MODE : int
-	{
-		SOURCE = 0,
-		VQ3,
-		CPMA,
-		GRAPPLE,
-		PARKOUR
-	}
-
 	public enum STATE : int
 	{
 		GROUND = 0,

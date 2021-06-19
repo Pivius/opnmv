@@ -4,8 +4,8 @@ using Sandbox;
 
 namespace OMMovement
 {
-    public class Accelerate : AirAccelerate
-    {
+	public class Accelerate : AirAccelerate
+	{
 		// Source Movement Accelerate
 
 		public override float GetVelDiff(Vector3 velocity, float length, Vector3 wish_dir)
@@ -17,5 +17,5 @@ namespace OMMovement
 		{
 			controller.Velocity = GetFinalVelocity(controller.Velocity, strafe_vel, controller.GetWalkSpeed(), controller.Properties.Accelerate);
 		}
-    }
+	}
 }

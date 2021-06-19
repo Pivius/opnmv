@@ -185,16 +185,12 @@ namespace OMMovement
 
 		public void TryDuck()
 		{
-			// Check to see if we are in the air.
 			bool in_air = !Controller.OnGround();
 			bool duck_keydown = Input.Down(InputButton.Duck);
 			bool in_duck = IsDucked;
 			float time_to_unduck_inv = Controller.Properties.DuckSpeed - Controller.Properties.UnDuckSpeed;
-			// Slow down ducked players.
-			//HandleDuckingSpeedCrop();
 
-			// If the player is holding down the duck button, the player is in duck transition, ducking, or duck-jumping.
-			if (duck_keydown || IsDucking  || in_duck)
+			if (duck_keydown || IsDucking || in_duck)
 			{
 				// DUCK
 				if (duck_keydown)
@@ -212,7 +208,7 @@ namespace OMMovement
 						IsDucking = true;
 					}
 					
-					// The player is in duck transition and not duck-jumping.
+					// The player is in duck transition
 					if (IsDucking)
 					{
 						float duck_ms = System.MathF.Max(0.0f, DUCK_TIME - DuckTime);
@@ -225,8 +221,7 @@ namespace OMMovement
 						else
 						{
 							// Calc parametric time
-							float duck_frac = Ease.SimpleSpline(duck_second / Controller.Properties.DuckSpeed);
-							SetDuckedEyeOffset(duck_frac);
+							SetDuckedEyeOffset(Ease.SimpleSpline(duck_second / Controller.Properties.DuckSpeed));
 						}
 					}
 				}
@@ -247,7 +242,6 @@ namespace OMMovement
 					// NOTE: When not onground, you can always unduck
 					if (Controller.Properties.AllowAutoMovement || in_air || IsDucking)
 					{
-						// We released the duck button, we aren't in "duck" and we are not in the air - start unduck transition.
 						if (Input.Released(InputButton.Duck))
 						{
 							if (in_duck)

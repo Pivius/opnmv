@@ -6,8 +6,6 @@ namespace OMMovement
 	{
 		// # Vanilla Quake 3 Air Accel
 
-		QuakeProperties props;
-
 		public override float GetVelDiff(Vector3 velocity, float length, Vector3 strafe_dir)
 		{
 			return (length) - velocity.Dot(strafe_dir);
@@ -60,20 +58,19 @@ namespace OMMovement
 			return velocity;
 		}
 
-		// Defaul Max Speed - 300
-		public virtual Vector3 Move(Vector3 velocity, CPMAProperties props, Vector3 strafe_vel = new Vector3(), Vector3 position = new Vector3())
+		public override void Move(MovementController controller, Vector3 strafe_vel = new Vector3())
 		{
+			var props = controller.Properties;
+			var velocity = controller.Velocity;
 			float strafe_vel_length = CapWishSpeed(strafe_vel.Length, props.MaxSpeed);
-			
+
 			if (Input.Left != 0 && Input.Forward == 0)
 				strafe_vel_length = CapWishSpeed(strafe_vel.Length, props.SideStrafeMaxSpeed);
 
-			velocity = GetFinalVelocity(velocity, strafe_vel, strafe_vel_length, props.AirAccelerate, props.StrafeAcceleration, props.AirStopAcceleration);
+			controller.Velocity = GetFinalVelocity(velocity, strafe_vel, strafe_vel_length, props.AirAccelerate, props.StrafeAcceleration, props.AirStopAcceleration);
 
 			if (props.AirControl > 0)
-				velocity = AirControl(velocity, strafe_vel.Normal, props.AirControl);
-
-			return velocity;
+				controller.Velocity = AirControl(velocity, strafe_vel.Normal, props.AirControl);
 		}
 	}
 }
