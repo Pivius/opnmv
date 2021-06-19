@@ -1,17 +1,18 @@
 using Sandbox;
 using System;
+
 namespace OMMovement
 {
-	public class DefaultController : MovementController
+	public class CPMAController : MovementController
 	{
-
-		public DefaultController()
+		public CPMAController()
 		{
+			Properties = new CPMAProperties();
+			AirAccelerate = new QuakeAirAccelerate();
 		}
 
 		public override void Simulate()
 		{
-			
 			if (StartMove()) 
 				return;
 

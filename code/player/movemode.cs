@@ -21,7 +21,8 @@ namespace Core
 		public List<PawnController> MoveControllers = new List<PawnController>
 		{
 			new DefaultController(),
-			new QuakeController()
+			new QuakeController(),
+			new CPMAController()
 		};
 
 		public override PawnController GetActiveController()

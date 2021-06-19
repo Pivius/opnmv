@@ -70,7 +70,7 @@ namespace OMMovement
 			controller.Velocity = GetFinalVelocity(velocity, strafe_vel, strafe_vel_length, props.AirAccelerate, props.StrafeAcceleration, props.AirStopAcceleration);
 
 			if (props.AirControl > 0)
-				controller.Velocity = AirControl(velocity, strafe_vel.Normal, props.AirControl);
+				controller.Velocity = AirControl(controller.Velocity, strafe_vel.Normal, props.AirControl);
 		}
 	}
 }
