@@ -8,7 +8,7 @@ namespace OMHUD
 	public class Container : Panel
 	{
 		public Dictionary<string, Elements> Elements = new Dictionary<string, Elements>();
-		public Dictionary<string, string> Properties = new Dictionary<string, string>();
+		public Dictionary<string, object> Properties = new Dictionary<string, object>();
 		public string StylePath {get; set;} = "/ui/hud/containers.scss";
 		public int Alignment {get; set;} = 1;
 		public Container()
@@ -47,7 +47,7 @@ namespace OMHUD
 			return child;
 		}
 
-		public void SetProperties(Dictionary<string, string> props)
+		public void SetProperties(Dictionary<string, object> props)
 		{
 			foreach (var item in props)
 			{

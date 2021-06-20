@@ -47,56 +47,25 @@ namespace OMHUD
 
 		public void SetContainerAngle(Container container, Angles angle)
 		{
-			container.SetProperties(new Dictionary<string, string>()
+			var transform = new PanelTransform();
+
+			container.SetProperties(new Dictionary<string, object>()
 			{
-				["Pitch"] = angle.pitch.ToString(),
-				["Yaw"] = angle.yaw.ToString()
+				["Pitch"] = angle.pitch,
+				["Yaw"] = angle.yaw
 			});
-			container.SetStyle("transform:rotateX(" + angle.pitch + "deg) " + "rotateY(" + angle.yaw + "deg) rotateZ(" + angle.roll + "deg)");
+			transform.AddRotation(angle.pitch, angle.yaw, angle.roll);
+			container.Style.Transform = transform;
+			container.Style.Dirty();
 		}
 
-		public void SetContainerAngle(Container container)
-		{
-			var align = container.Alignment;
-
-			if (align == 1)
-			{
-				container.SetStyle("transform-origin:50% 50%");
-				SetContainerAngle(container, new Angles(9,-10,-1));
-			}
-			else if (align == 3)
-			{
-				container.SetStyle("transform-origin:50% 50%");
-				SetContainerAngle(container, new Angles(-9,-10,1));
-			}
-			else if (align == 4)
-			{
-				container.SetStyle("transform-origin:50% 50%");
-				SetContainerAngle(container, new Angles(0,-10,-1));
-			}
-			else if (align == 6)
-			{
-				container.SetStyle("transform-origin:50% 50%");
-				SetContainerAngle(container, new Angles(0,10,1));
-			}
-			else if (align == 7)
-			{
-				container.SetStyle("transform-origin:50% 50%");
-				SetContainerAngle(container, new Angles(9,-10,-1));
-			}
-			else if (align == 9)
-			{
-				container.SetStyle("transform-origin:50% 50%");
-				SetContainerAngle(container, new Angles(-9,-10,1));
-			}
-		}
-		
 		public void ContainerTick()
 		{
-			foreach (var container in Containers)
+			foreach (var item in Containers)
 			{
-				SetContainerAngle(container.Value);
-				container.Value.Tick();
+				var container = item.Value;
+				
+				container.Tick();
 			}
 		}
 	}

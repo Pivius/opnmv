@@ -1,6 +1,6 @@
 hudmodule
 {
-	position: relative;
+	position: absolute;
 	display: flex; 
 	flex-direction: row;
 	flex-wrap: wrap;
@@ -9,7 +9,5 @@ hudmodule
 	top: 3%;
 	width: 94%;
 	height: 94%;
-	//transform-style: preserve-3d;
-	perspective: 600px;
 	background-color: rgba( #333, 0);
 }
