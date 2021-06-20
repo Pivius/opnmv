@@ -71,14 +71,9 @@ namespace OMHUD
 				Style.Set(element_prop[0], element_prop[1].Trim());
 			}
 		}
-		public Interp<List<float>> test_var;
+
 		public override void Tick()
 		{
-
-			test_var.Enabled = true;
-			test_var.Update();
-			Sandbox.BetterLog.Info(test_var.GetValue()[1]);
-			Sandbox.BetterLog.Info(test_var.GetValue()[2]);
 			if ( Local.Pawn == null ) return;
 			var transform = new PanelTransform();
 
