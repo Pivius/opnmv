@@ -19,7 +19,7 @@ namespace OMMovement
 		public virtual float Gravity{get; set;} = 800.0f;
 		public virtual float JumpPower{get; set;} = 220.0f;
 		public virtual float StepSize{get; set;} = 16.0f;
-		public virtual float StandableAngle{get; set;} = 45;
+		public virtual float StandableAngle{get; set;} = 1;
 		public virtual float FallDamageMultiplier{get; set;} = 0.0563f;
 		public virtual bool AutoJump{get; set;} = true;
 		public virtual bool AllowAutoMovement{get; set;} = true;

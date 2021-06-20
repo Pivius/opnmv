@@ -1,12 +1,17 @@
 using Sandbox;
 using System;
+using Core;
+
 namespace OMMovement
 {
-	public class DefaultController : MovementController
+	public class ParkourController : MovementController
 	{
+		public Walljump Walljump;
 
-		public DefaultController()
+		public ParkourController()
 		{
+			Properties = new ParkourProperties();
+			Walljump = new Walljump(this);
 		}
 
 		public override void Simulate()

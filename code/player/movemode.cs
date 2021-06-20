@@ -22,7 +22,8 @@ namespace Core
 		{
 			new DefaultController(),
 			new QuakeController(),
-			new CPMAController()
+			new CPMAController(),
+			new ParkourController()
 		};
 
 		public override PawnController GetActiveController()

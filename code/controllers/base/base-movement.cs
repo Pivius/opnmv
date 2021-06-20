@@ -63,7 +63,7 @@ namespace OMMovement
 		{
 			MoveHelper mover = new MoveHelper(Position, Velocity);
 			mover.Trace = mover.Trace.Size(Properties.OBBMins, Properties.OBBMaxs).Ignore(Pawn);
-			mover.MaxStandableAngle = GroundAngle;
+			mover.MaxStandableAngle = Properties.StandableAngle;
 
 			mover.TryMove(Time.Delta);
 
@@ -155,7 +155,7 @@ namespace OMMovement
 			float startz = Velocity.z;
 
 			Velocity = Velocity.WithZ( startz + flMul );
-			//Velocity -= new Vector3( 0, 0, Properties.Gravity * 0.5f ) * Time.Delta;
+			Velocity = Gravity.AddGravity(Properties.Gravity * 0.5f, Velocity);
 
 			AddEvent( "jump" );
 		}

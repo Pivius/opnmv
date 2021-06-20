@@ -19,6 +19,13 @@ namespace OMMovement
 			Controller = controller;
 		}
 
+		private float SimpleSpline(float value)
+		{
+			float value_squared = value * value;
+
+			return (3 * value_squared - 2 * value_squared * value);
+		}
+
 		public virtual Vector3 GetUnDuckOrigin(bool negate)
 		{
 			Vector3 new_origin = Controller.Position;
@@ -221,7 +228,7 @@ namespace OMMovement
 						else
 						{
 							// Calc parametric time
-							SetDuckedEyeOffset(Ease.SimpleSpline(duck_second / Controller.Properties.DuckSpeed));
+							SetDuckedEyeOffset(SimpleSpline(duck_second / Controller.Properties.DuckSpeed));
 						}
 					}
 				}
@@ -279,7 +286,7 @@ namespace OMMovement
 								else
 								{
 									// Calc parametric time
-									float duck_frac = Ease.SimpleSpline(1.0f - (duck_second / Controller.Properties.UnDuckSpeed));
+									float duck_frac = SimpleSpline(1.0f - (duck_second / Controller.Properties.UnDuckSpeed));
 									
 									SetDuckedEyeOffset(duck_frac);
 									IsDucking = true;
