@@ -1,59 +1,110 @@
+using System.Numerics;
 using System;
-using Sandbox;
+using System.Linq;
+using System.ComponentModel;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text.RegularExpressions;
+using Sandbox;
 
 namespace Core
 {
-	public class Interp
+	public class Interp<T>
 	{
-		public float StartVal {get; set;}
-		public float EndVal {get; set;}
-		public float CurVal {get; set;}
+		public bool Enabled {get; set;} = false;
+		public List<float> StartValue {get; set;}
+		public List<float> EndValue {get; set;}
+		public List<float> Value {get; set;}
 		public float Duration {get; set;}
 		public float StartTime {get; set;}
 		public float CurrentTime {get; set;}
+		public float DeltaTime {get; set;} = 0.0f;
 		public Func<float, float, float, float, float> Easing {get; set;}
-
-		public Interp(float start, float end, float duration, Func<float, float, float, float, float> easing)
+		
+		public Interp(object start, object end, float duration, float dt, Func<float, float, float, float, float> easing)
 		{
-			StartVal = start;
-			CurVal = start;
-			EndVal = end;
+			SetValues(start, end, duration, dt, easing);
+		}
+
+		public void SetValues(object start, object end, float duration, float dt, Func<float, float, float, float, float> easing)
+		{
+			Value = SetStartValue(start);
+			SetEndValue(end);
 			Duration = duration;
 			Easing = easing;
-			CurrentTime = 0;
-			StartTime = Time.Now;
-		}
-
-		public float PerformEasing()
-		{
-			return Easing(StartVal, EndVal - StartVal, CurrentTime, Duration);
-		}
-
-		public float Reset()
-		{
-			CurVal = StartVal;
+			DeltaTime = dt;
 			CurrentTime = 0;
 			StartTime = 0;
-			return 0;
+		}
+
+		public List<float> SetStartValue(object start)
+		{
+			if (typeof(T) == typeof(List<float>))
+				StartValue = (List<float>) start;
+			else
+				StartValue = Parse.ToList(start);
+
+			return StartValue;
+		}
+
+		public List<float> SetEndValue(object end)
+		{
+			if (typeof(T) == typeof(List<float>))
+				EndValue = (List<float>) end;
+			else
+				EndValue = Parse.ToList(end);
+
+			return EndValue;
+		}
+
+		public T GetValue()
+		{
+			var type = typeof(T).ToString();
+
+			if (type == typeof(List<float>).ToString())
+				return (T) (object) Value;
+			else if (type == typeof(float).ToString())
+				return (T) (object) Value[0];
+			else
+				return Parse.FromListToEquatable<T>(Value);
+		}
+
+		public void Reset()
+		{
+			Value = StartValue;
+			CurrentTime = 0;
+			StartTime = 0;
+		}
+
+		public float PerformEasing(float start, float end, float time, float duration)
+		{
+			return Easing(start, end - start, time, duration);
 		}
 
 		public void Update(float dt = 0)
 		{
-			CurrentTime = (dt > 0) ? MathX.Clamp(CurrentTime + dt, 0, Duration) : MathX.Clamp(Time.Now - StartTime, 0, Duration);
+			if (Enabled == true)
+			{
+				var time = (dt <= 0) ? (Time.Now - StartTime) : (CurrentTime + dt);
 
-			if (CurrentTime == 0.0f || StartTime == 0.0f)
-			{
-				CurVal = StartVal;
-				StartTime = Time.Now;
-			}
-			else if (CurrentTime == Duration)
-			{
-				CurVal = EndVal;
-			}
-			else
-			{
-				CurVal = PerformEasing();
+				CurrentTime = MathX.Clamp(time, 0, Duration);
+
+				if (CurrentTime == 0.0f || StartTime == 0.0f)
+				{
+					Value = StartValue;
+					StartTime = Time.Now;
+				}
+				else if (CurrentTime == Duration)
+				{
+					Value = EndValue;
+				}
+				else
+				{
+					for (int i = 0; i < EndValue.Count; i++)
+					{
+						Value[i] = PerformEasing(StartValue[i], EndValue[i], CurrentTime, Duration);
+					}
+				}
 			}
 		}
 	}

@@ -1,39 +1,30 @@
+using System.Runtime.Serialization;
 using Sandbox;
 using Sandbox.UI;
 using Sandbox.UI.Construct;
 using System;
 using System.Collections.Generic;
+using System.Text;
+using Core;
 
 
 namespace OMHUD
 {
 	public partial class HUDModule : Panel
 	{
-		public float Distance {get; set;} = 3.0f;
-		public Angles PrevViewDelta {get; set;}
-		public Vector3 PrevPos {get; set;}
 		public Dictionary<string, Elements> Elements = new Dictionary<string, Elements>();
 		public Dictionary<string, Container> Containers = new Dictionary<string, Container>();
-
-		// Offset Module on moving around
-		public Vector2 DefaultOffset {get; set;}
-		public Vector2 Offset {get; set;}
-		public float OffsetAimRate{get; set;} = 25.0f;
-		public float OffsetMoveRate{get; set;} = 10.0f;
-		public float OffsetResetRate{get; set;} = 0.5f;
-
-		// Rotate module on looking around
-		public Angles DefaultRotation {get; set;}
-		public Angles Rotation {get; set;}
-		public float RotationRate {get; set;} = 45.0f;
-		public float RotationResetRate {get; set;} = 0.5f;
+		public Angles PrevViewAngles {get; set;}
+		public Angles DeltaViewAngles {get; set;}
+		public float OffsetAimRate{get; set;} = 45.0f;
+		public float OffsetResetRate{get; set;} = 45f;
 
 		public HUDModule()
 		{
 
 			StyleSheet.Load( "/ui/hud/module.scss" );
 			InitContainers();
-						GetContainer("BottomLeft").NewElement<Velocity>("Velocity");
+			GetContainer("BottomLeft").NewElement<Velocity>("Velocity");
 		}
 
 		public void NewElement<T>(string identifier = null) where T : Elements, new()
@@ -58,23 +49,18 @@ namespace OMHUD
 			return child;
 		}
 
-		public void DoRotation()
-		{
-			var player = Local.Pawn;
-			var rotation_delta = player.EyeRot.Angles() - PrevViewDelta;
-
-			if (!(rotation_delta.yaw > 90 || rotation_delta.yaw < -90))
-				Rotation = Rotation.WithYaw(Rotation.yaw + ((rotation_delta.yaw - Rotation.yaw * RotationResetRate/10) * (RotationRate/100)));
-
-			if (!(rotation_delta.pitch > 90 || rotation_delta.pitch < -90))
-				Rotation = Rotation.WithPitch(Rotation.pitch + ((rotation_delta.pitch - Rotation.pitch * RotationResetRate/10) * (RotationRate/100)));
-
-			PrevViewDelta = player.EyeRot.Angles();
-		}
-
 		public void DoOffset()
 		{
+			var player = Local.Pawn;
+			var rotation_delta = player.EyeRot.Angles() - PrevViewAngles;
 
+			DeltaViewAngles = DeltaViewAngles.WithYaw(InterpFunctions.Linear(DeltaViewAngles.yaw, MathX.Clamp((rotation_delta.yaw * OffsetAimRate) - DeltaViewAngles.yaw, -90, 90) , Time.Delta * OffsetResetRate, 25f));
+			DeltaViewAngles = DeltaViewAngles.WithPitch(InterpFunctions.Linear(DeltaViewAngles.pitch, MathX.Clamp((rotation_delta.pitch * OffsetAimRate) - DeltaViewAngles.pitch, -90, 90), Time.Delta * OffsetResetRate, 25f));
+
+			if (Angles.AngleVector(DeltaViewAngles).IsNaN)
+				DeltaViewAngles = new Angles();
+
+			PrevViewAngles = player.EyeRot.Angles();
 		}
 		
 		public void SetStyle(params string[] props)
@@ -85,18 +71,23 @@ namespace OMHUD
 				Style.Set(element_prop[0], element_prop[1].Trim());
 			}
 		}
-
+		public Interp<List<float>> test_var;
 		public override void Tick()
 		{
-			var player = Local.Pawn;
-			if ( player == null ) return;
-			DoRotation();
+
+			test_var.Enabled = true;
+			test_var.Update();
+			Sandbox.BetterLog.Info(test_var.GetValue()[1]);
+			Sandbox.BetterLog.Info(test_var.GetValue()[2]);
+			if ( Local.Pawn == null ) return;
+			var transform = new PanelTransform();
+
 			DoOffset();
-			Rotation += DefaultRotation;
-			Offset += DefaultOffset;
-			SetStyle( "transform: translateX(" + Rotation.yaw + "px) translateY(" + (-Rotation.pitch) + "px)");
-			//SetStyle( "transform: rotateX(" + Rotation.pitch + "deg) " + "rotateY(" + Rotation.yaw + "deg)");
 			ContainerTick();
+			transform.AddTranslateX(DeltaViewAngles.yaw);
+			transform.AddTranslateY(-DeltaViewAngles.pitch);
+			Style.Transform = transform;
+			Style.Dirty();
 		}
 	}
 

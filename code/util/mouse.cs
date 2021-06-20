@@ -51,14 +51,14 @@ namespace Core
 
 				// Further re-scale by yaw and pitch magnitude if user requests alternate mode 2/4
 				// This means that they will need to up their value for m_customaccel_scale greatly (>40x) since m_pitch/yaw default
-				//  to 0.022
-				if (custom_accel  == 2.0f || custom_accel  == 4.0f)
+				// to 0.022
+				if (custom_accel == 2.0f || custom_accel == 4.0f)
 				{ 
 					delta.x *= GetConCommand("m_yaw"); 
 					delta.y *= GetConCommand("m_pitch"); 
 				} 
 			}
-			else if (custom_accel  == 3.0f)
+			else if (custom_accel == 3.0f)
 			{
 				float raw_mouse_movement_distance_squared = dx * dx + dy * dy;
 				float fExp = MathF.Max(0.0f, (GetConCommand("m_customaccel_exponent") - 1.0f) / 2.0f);
