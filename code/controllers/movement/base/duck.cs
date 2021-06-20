@@ -124,7 +124,6 @@ namespace OMMovement
 			new_origin += hull_delta;
 			trace = TraceUtil.PlayerBBox(Controller.Position, new_origin, Controller);
 			Controller.Properties.ViewOffset = Controller.GetPlayerViewOffset(false);
-			Controller.Position = trace.EndPos;
 			Controller.CategorizePosition(Controller.OnGround());
 		}
 
