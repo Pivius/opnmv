@@ -115,6 +115,7 @@ namespace OMMovement
 			Vector3 hull_duck = Controller.GetPlayerMaxs(true) - Controller.GetPlayerMins(true);
 			Vector3 hull_delta = (hull_normal - hull_duck) * -1;
 			Vector3 new_origin = Controller.Position;
+			bool saved_duck = IsDucked;
 			TraceResult trace;
 			
 			InDuckJump = false;
@@ -124,6 +125,7 @@ namespace OMMovement
 			new_origin += hull_delta;
 			trace = TraceUtil.PlayerBBox(Controller.Position, new_origin, Controller);
 			Controller.Properties.ViewOffset = Controller.GetPlayerViewOffset(false);
+			Controller.Position = trace.EndPos;
 			Controller.CategorizePosition(Controller.OnGround());
 		}
 
@@ -241,7 +243,7 @@ namespace OMMovement
 						if (CanUnDuckJump())
 							return;
 					}
-					else if ((Controller.Velocity.z >= 0.0f) && IsDucked && InDuckJump && CanUnDuck())
+					else if ((Controller.OnGround()) && IsDucked && InDuckJump && CanUnDuck())
 						FinishUnDuckJump();
 
 					// Try to unduck unless automovement is not allowed
