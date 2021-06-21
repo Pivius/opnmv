@@ -24,6 +24,10 @@ namespace OMMovement
 			Unstuck = new Sandbox.Unstuck(this);
 		}
 
+		public virtual MovementPlayer GetPlayer()
+		{
+			return (MovementPlayer)Pawn;
+		}
 		public override TraceResult TraceBBox(Vector3 start, Vector3 end, float liftFeet = 0.0f)
 		{
 			return TraceBBox(start, end, Properties.OBBMins, Properties.OBBMaxs, liftFeet);
@@ -98,6 +102,7 @@ namespace OMMovement
 
 		public override void Simulate()
 		{
+			
 			if (StartMove()) 
 				return;
 

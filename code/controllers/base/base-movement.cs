@@ -18,7 +18,7 @@ namespace OMMovement
 
 		public float GetWalkSpeed()
 		{
-			float walk_speed = (Input.Down(InputButton.Walk) && Properties.CanWalk) ? Properties.WalkSpeed : ((Input.Down(InputButton.Run) && Properties.CanRun) ? Properties.RunSpeed : Properties.DefaultSpeed);
+			float walk_speed = (GetPlayer().KeyDown(InputButton.Walk) && Properties.CanWalk) ? Properties.WalkSpeed : ((GetPlayer().KeyDown(InputButton.Run) && Properties.CanRun) ? Properties.RunSpeed : Properties.DefaultSpeed);
 	
 			return Duck.IsDucked ? walk_speed * (Properties.DuckedWalkSpeed/Properties.DefaultSpeed) : walk_speed;
 		}
@@ -162,7 +162,7 @@ namespace OMMovement
 
 		public override void CheckLadder()
 		{
-			if (IsTouchingLadder && Input.Pressed(InputButton.Jump))
+			if (IsTouchingLadder && GetPlayer().KeyPressed(InputButton.Jump))
 			{
 				Velocity = LadderNormal * 100.0f;
 				IsTouchingLadder = false;
@@ -224,6 +224,7 @@ namespace OMMovement
 		/// </returns>
 		public virtual bool SetupMove()
 		{
+			var player = GetPlayer();
 			Swimming = Water.CheckWater(Position, Properties.OBBMins, Properties.OBBMaxs, GetViewOffset(), Pawn);
 			
 			//
@@ -249,7 +250,7 @@ namespace OMMovement
 				if (Velocity.z < 0.0f && Water.JumpTime > 0.0f)
 					Water.JumpTime = 0.0f;
 
-				if (Properties.AutoJump ? Input.Down(InputButton.Jump) : Input.Pressed(InputButton.Jump))
+				if (Properties.AutoJump ? player.KeyDown(InputButton.Jump) : player.KeyPressed(InputButton.Jump))
 					CheckJumpButton();
 	
 				Water.Move(this);
@@ -262,8 +263,8 @@ namespace OMMovement
 			}
 			else
 			{
-				
-				if (Properties.AutoJump ? Input.Down(InputButton.Jump) : Input.Pressed(InputButton.Jump))
+		
+				if (Properties.AutoJump ? player.KeyDown(InputButton.Jump) : player.KeyPressed(InputButton.Jump))
 					CheckJumpButton();
 
 				bool bStartOnGround = OnGround();

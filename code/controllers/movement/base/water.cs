@@ -135,7 +135,7 @@ namespace OMMovement
 			return InWater();
 		}
 
-		protected Vector3 GetSwimVel(float max_speed)
+		protected Vector3 GetSwimVel(float max_speed, bool is_jumping)
 		{
 			Vector3 forward = Input.Rotation.Forward;
 			Vector3 side = Input.Rotation.Left;
@@ -144,7 +144,7 @@ namespace OMMovement
 			float up_speed = Input.Up * max_speed;
 			Vector3 strafe_vel = (forward * forward_speed) + (side * side_speed);
 			
-			if (Input.Down(InputButton.Jump))
+			if (is_jumping)
 			{
 				strafe_vel.z += max_speed;
 			}
@@ -183,7 +183,7 @@ namespace OMMovement
 		public override void Move(MovementController controller, Vector3 strafe_vel = new Vector3())
 		{
 			BaseProperties props = controller.Properties;
-			strafe_vel = GetSwimVel(props.MaxSpeed);
+			strafe_vel = GetSwimVel(props.MaxSpeed, controller.GetPlayer().KeyDown(InputButton.Jump));
 			Entity pawn = controller.Pawn;
 			Vector3 velocity = controller.Velocity;
 			Vector3 position = controller.Position;

@@ -194,7 +194,7 @@ namespace OMMovement
 		public void TryDuck()
 		{
 			bool in_air = !Controller.OnGround();
-			bool duck_keydown = Input.Down(InputButton.Duck);
+			bool duck_keydown = Controller.GetPlayer().KeyDown(InputButton.Duck);
 			bool in_duck = IsDucked;
 			float time_to_unduck_inv = Controller.Properties.DuckSpeed - Controller.Properties.UnDuckSpeed;
 
@@ -204,12 +204,12 @@ namespace OMMovement
 				if (duck_keydown)
 				{
 					// Have the duck button pressed, but the player currently isn't in the duck position.
-					if (Input.Pressed(InputButton.Duck) && !in_duck)
+					if (Controller.GetPlayer().KeyPressed(InputButton.Duck) && !in_duck)
 					{
 						DuckTime = DUCK_TIME;
 						IsDucking = true;
 					}
-					else if (Input.Pressed(InputButton.Duck) && IsDucking)
+					else if (Controller.GetPlayer().KeyPressed(InputButton.Duck) && IsDucking)
 					{
 						FinishUnDuck();
 						DuckTime = DUCK_TIME;
@@ -243,14 +243,14 @@ namespace OMMovement
 						if (CanUnDuckJump())
 							return;
 					}
-					else if ((Controller.OnGround()) && IsDucked && InDuckJump && CanUnDuck())
+					else if (Controller.OnGround() && IsDucked && InDuckJump && CanUnDuck())
 						FinishUnDuckJump();
 
 					// Try to unduck unless automovement is not allowed
 					// NOTE: When not onground, you can always unduck
 					if (Controller.Properties.AllowAutoMovement || in_air || IsDucking)
 					{
-						if (Input.Released(InputButton.Duck))
+						if (Controller.GetPlayer().KeyReleased(InputButton.Duck))
 						{
 							if (in_duck)
 							{
