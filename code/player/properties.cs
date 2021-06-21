@@ -11,5 +11,7 @@ namespace Core
 	public partial class MovementPlayer
 	{
 		public Vector2 PreviousDelta {get; set;}
+		public ulong Buttons {get; set;}
+		public ulong OldButtons {get; set;}
 	}
 }

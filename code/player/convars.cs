@@ -15,5 +15,6 @@ namespace Core
 		[ConVar.ClientData("sensitivity")] public static float Sensitivity { get; set; } = 1.0f;
 		[ConVar.ClientData("m_yaw")] public static float Yaw { get; set; } = 0.022f;
 		[ConVar.ClientData("m_pitch")] public static float Pitch { get; set; } = 0.022f;
+		[ConVar.ClientData("fov_desired")] public static float FOV { get; set; } = 90f;
 	}
 }
