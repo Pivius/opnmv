@@ -10,6 +10,7 @@ namespace Core
 {
 	public partial class MovementPlayer : Player
 	{
+		TimeSince timeSinceDied;
 		public MovementPlayer()
 		{
 		}
@@ -25,34 +26,28 @@ namespace Core
 			EnableHideInFirstPerson = true;
 			EnableShadowInFirstPerson = true;
 			base.Respawn();
-			BetterLog.Info("test");
-		}
-
-		[Event.BuildInput]
-		public virtual void SetSensitivity(InputBuilder input)
-		{
-			var prev_delta = PreviousDelta;
-			var view_angle = Rotation.From(input.ViewAngles);
-
-			MouseInput.MouseMove(ref view_angle, new Vector2(Input.MouseDelta.x, Input.MouseDelta.y), ref prev_delta);
-			input.ViewAngles = view_angle.Angles();
-			PreviousDelta = prev_delta;
 		}
 
 		public override void Simulate(Client client)
 		{
-			base.Simulate(client);
+			ProcessMoveButtons();
+			if (base.LifeState == LifeState.Dead)
+			{
+				if (timeSinceDied > 3 && IsServer)
+					Respawn();
+
+				return;
+			}
+			
+			var controller = GetActiveController();
+			controller?.Simulate( client, this, GetActiveAnimator() );
 		}
 
-		public override void BuildInput( InputBuilder input )
-		{	
-			base.BuildInput(input);
-			SetSensitivity(input);
-		}
-		
 		public override void FrameSimulate(Client client)
 		{
-			base.FrameSimulate(client);
+			ProcessMoveButtons();
+			var controller = GetActiveController();
+			controller?.FrameSimulate(client, this, GetActiveAnimator());
 		}
 
 		public override void OnKilled()

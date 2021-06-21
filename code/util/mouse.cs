@@ -12,7 +12,7 @@ namespace Core
 			return Single.Parse(ConsoleSystem.GetValue(command));
 		}
 
-		private static void GetMouseDelta(ref Vector2 delta_in, ref Vector2 prev_delta)
+		private static void FilterMouse(ref Vector2 delta_in, ref Vector2 prev_delta)
 		{
 			var mouse_filter = GetConCommand("m_filter") == 1 ? true : false;
 			
@@ -78,18 +78,17 @@ namespace Core
 				delta.y = 0.0f;
 		}
 
-		private static Rotation AdjustView(Rotation view_rot, Vector2 delta)
+		private static void AdjustView(ref Angles view_angles, Vector2 delta)
 		{
-			Angles view_ang = view_rot.Angles() - new Angles(GetConCommand("m_pitch") * -delta.y, GetConCommand("m_yaw") * delta.x, 0);
-			view_ang = view_ang.WithPitch(MathX.Clamp(view_ang.pitch, -85, 85));
-			return Rotation.LookAt(view_ang.Direction, Vector3.Up);
+			view_angles -= new Angles(GetConCommand("m_pitch") * (-delta.y), GetConCommand("m_yaw") * delta.x, 0);
+			view_angles = view_angles.WithPitch(MathX.Clamp(view_angles.pitch, -85, 85));
 		}
 
-		public static void MouseMove(ref Rotation view, Vector2 delta, ref Vector2 prev_delta)
+		public static void MouseMove(ref Angles view_angles, ref Vector2 prev_delta, Vector2 delta)
 		{
-			GetMouseDelta(ref delta, ref prev_delta);
+			FilterMouse(ref delta, ref prev_delta);
 			ScaleMouse(ref delta);
-			view = AdjustView(view, delta);
+			AdjustView(ref view_angles, delta);
 		}
 	}
 }
