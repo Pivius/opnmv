@@ -1,5 +1,6 @@
 using Sandbox;
 using System;
+using System.Collections;
 using Core;
 
 namespace OMMovement
@@ -11,13 +12,15 @@ namespace OMMovement
 		public ParkourController()
 		{
 			Properties = new ParkourProperties();
-			Walljump = new Walljump(this);
+			Walljump = new Walljump();
 		}
 
 		public override void Simulate()
 		{
 			if (StartMove()) 
 				return;
+
+			Walljump.Move(this, WishVelocity);
 
 			if (SetupMove()) 
 				return;

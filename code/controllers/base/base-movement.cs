@@ -117,7 +117,6 @@ namespace OMMovement
 			}
 			finally
 			{
-
 				// Now pull the base velocity back out.  Base velocity is set if you are on a moving object, like a conveyor (or maybe another monster?)
 				Velocity -= BaseVelocity;
 			}
@@ -150,7 +149,6 @@ namespace OMMovement
 				return;
 
 			ClearGroundEntity();
-
 			Velocity = Velocity.WithZ( Velocity.z + Properties.JumpPower );
 			Velocity = Gravity.AddGravity(Properties.Gravity * 0.5f, Velocity);
 
@@ -195,11 +193,10 @@ namespace OMMovement
 		/// </returns>
 		public virtual bool StartMove()
 		{
-			var is_ducked = false;
 			EyePosLocal = Vector3.Up * GetViewOffset() * Pawn.Scale;
 			EyePosLocal += TraceOffset;
 			EyeRot = Input.Rotation;
-			
+			WishVelocity = WishVel(Properties.MaxMove);
 			UpdateBBox();
 			RestoreGroundPos();
 			Duck.TryDuck();
@@ -222,8 +219,9 @@ namespace OMMovement
 		public virtual bool SetupMove()
 		{
 			var player = GetPlayer();
+
 			Swimming = Water.CheckWater(Position, Properties.OBBMins, Properties.OBBMaxs, GetViewOffset(), Pawn);
-			
+
 			//
 			// Start Gravity
 			//
@@ -272,8 +270,6 @@ namespace OMMovement
 					Velocity = Velocity.WithZ(0);
 					Friction.Move(this);
 				}
-
-				WishVelocity = WishVel(Properties.MaxMove);
 
 				if (!IsTouchingLadder)
 					WishVelocity = WishVelocity.WithZ(0);
