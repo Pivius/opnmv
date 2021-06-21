@@ -47,7 +47,7 @@ namespace OMMovement
 			TraceResult trace = TraceUtil.PlayerBBox(Position, Position.WithZ(Position.z - 2), this);
 			Vector3 normal = trace.Normal;
 
-			if (normal.z < 1 && Velocity.z <= 0 && GroundEntity != null && Properties.MoveState == STATE.INAIR)
+			if (normal.z < 1 && Velocity.z <= 0 && OnGround() && Properties.MoveState == STATE.INAIR)
 			{
 				Velocity -= (normal * Velocity.Dot(normal));
 
@@ -146,15 +146,12 @@ namespace OMMovement
 				return;
 			}
 			
-			if ( GroundEntity == null )
+			if (!OnGround())
 				return;
 
 			ClearGroundEntity();
 
-			float flMul = 268.3281572999747f * 1.2f;
-			float startz = Velocity.z;
-
-			Velocity = Velocity.WithZ( startz + flMul );
+			Velocity = Velocity.WithZ( Velocity.z + Properties.JumpPower );
 			Velocity = Gravity.AddGravity(Properties.Gravity * 0.5f, Velocity);
 
 			AddEvent( "jump" );
@@ -233,6 +230,9 @@ namespace OMMovement
 			if (!Swimming && !IsTouchingLadder)
 			{
 				Velocity = Gravity.AddGravity(Properties.Gravity * 0.5f, Velocity);
+				Velocity += new Vector3( 0, 0, BaseVelocity.z ) * Time.Delta;
+
+				BaseVelocity = BaseVelocity.WithZ( 0 );
 			}
 
 			if (Water.JumpTime > 0.0f)
@@ -267,14 +267,10 @@ namespace OMMovement
 				if (Properties.AutoJump ? player.KeyDown(InputButton.Jump) : player.KeyPressed(InputButton.Jump))
 					CheckJumpButton();
 
-				bool bStartOnGround = OnGround();
-
-				if (bStartOnGround)
+				if (OnGround())
 				{
 					Velocity = Velocity.WithZ(0);
-
-					if (GroundEntity != null)
-						Friction.Move(this);
+					Friction.Move(this);
 				}
 
 				WishVelocity = WishVel(Properties.MaxMove);
@@ -289,7 +285,7 @@ namespace OMMovement
 					LadderMove();
 					Properties.MoveState = STATE.LADDER;
 				}
-				else if (GroundEntity != null)
+				else if (OnGround())
 				{
 					bStayOnGround = true;
 					WalkMove();
@@ -303,12 +299,7 @@ namespace OMMovement
 
 				base.CategorizePosition(bStayOnGround);
 
-				// FinishGravity
-				if (!IsTouchingLadder)
-					Velocity = Gravity.AddGravity(Properties.Gravity * 0.5f, Velocity);
-
-
-				if (GroundEntity != null)
+				if (OnGround())
 				{
 					AddSlopeSpeed();
 					Velocity = Velocity.WithZ(0);
@@ -322,6 +313,10 @@ namespace OMMovement
 		/// </summary>
 		public virtual void EndMove()
 		{
+			// FinishGravity
+			if (!IsTouchingLadder)
+				Velocity = Gravity.AddGravity(Properties.Gravity * 0.5f, Velocity);
+
 			SaveGroundPos();
 			Properties.OldVelocity = Velocity;
 		}

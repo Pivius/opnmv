@@ -17,7 +17,7 @@ namespace OMMovement
 		public virtual float DuckedWalkSpeed{get; set;} = 150.0f;
 		public virtual float SwimSpeed{get; set;} = 250.0f;
 		public virtual float Gravity{get; set;} = 800.0f;
-		public virtual float JumpPower{get; set;} = 220.0f;
+		public virtual float JumpPower{get; set;} = 268.3281572999747f * 1.2f;
 		public virtual float StepSize{get; set;} = 16.0f;
 		public virtual float StandableAngle{get; set;} = 1;
 		public virtual float FallDamageMultiplier{get; set;} = 0.0563f;

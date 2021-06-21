@@ -13,7 +13,7 @@ namespace OMMovement
 		public override float DefaultSpeed{get; set;} = 400.0f;
 		public override float DuckedWalkSpeed{get; set;} = 200.0f;
 		public override float SwimSpeed{get; set;} = 400.0f;
-		public override float Gravity{get; set;} = 600.0f;
+		public override float Gravity{get; set;} = 300.0f;
 		public override float StandableAngle{get; set;} = 45;
 
 
