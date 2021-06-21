@@ -47,19 +47,19 @@ namespace Core
 			Buttons = buttons;
 		}
 
-		public bool KeyDown(InputButton button)
+		public bool KeyDown(object button)
 		{
 			var buttons = Buttons;
 
 			return (buttons &= ((ulong) button) << 1) != 0;
 		}
 
-		public bool KeyPressed(InputButton button)
+		public bool KeyPressed(object button)
 		{
 			var buttons = Buttons;
 			var old_buttons = OldButtons;
 
-			if ((old_buttons != buttons))
+			if ((old_buttons != buttons) && Buttons > OldButtons)
 			{
 				buttons &= ((ulong) button) << 1;
 				old_buttons &= ((ulong) button) << 1;
@@ -70,7 +70,7 @@ namespace Core
 			return false;
 		}
 
-		public bool KeyReleased(InputButton button)
+		public bool KeyReleased(object button)
 		{
 			var buttons = Buttons;
 			var old_buttons = OldButtons;
