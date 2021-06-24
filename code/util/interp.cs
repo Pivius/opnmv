@@ -12,15 +12,15 @@ namespace Core
 	public class Interp<T>
 	{
 		public bool Enabled {get; set;} = false;
-		public List<float> StartValue {get; set;}
-		public List<float> EndValue {get; set;}
-		public List<float> Value {get; set;}
+		public List<float> StartValue {get; protected set;}
+		public List<float> EndValue {get; protected set;}
+		public List<float> Value {get; protected set;}
 		public float Duration {get; set;}
 		public float StartTime {get; set;}
 		public float CurrentTime {get; set;}
 		public float DeltaTime {get; set;} = 0.0f;
 		public Func<float, float, float, float, float> Easing {get; set;}
-		
+
 		public Interp(object start, object end, float duration, float dt, Func<float, float, float, float, float> easing)
 		{
 			SetValues(start, end, duration, dt, easing);
@@ -28,7 +28,7 @@ namespace Core
 
 		public void SetValues(object start, object end, float duration, float dt, Func<float, float, float, float, float> easing)
 		{
-			Value = SetStartValue(start);
+			Value = new List<float>(SetStartValue(start));
 			SetEndValue(end);
 			Duration = duration;
 			Easing = easing;
@@ -71,7 +71,7 @@ namespace Core
 
 		public void Reset()
 		{
-			Value = StartValue;
+			Value = new List<float>(StartValue);
 			CurrentTime = 0;
 			StartTime = 0;
 		}
@@ -91,16 +91,16 @@ namespace Core
 
 				if (CurrentTime == 0.0f || StartTime == 0.0f)
 				{
-					Value = StartValue;
+					Value = new List<float>(StartValue);
 					StartTime = Time.Now;
 				}
 				else if (CurrentTime == Duration)
 				{
-					Value = EndValue;
+					Value = new List<float>(EndValue);
 				}
 				else
 				{
-					for (int i = 0; i < EndValue.Count; i++)
+					for (int i = 0; i < Value.Count; i++)
 					{
 						Value[i] = PerformEasing(StartValue[i], EndValue[i], CurrentTime, Duration);
 					}
