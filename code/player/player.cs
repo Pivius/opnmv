@@ -11,6 +11,7 @@ namespace Core
 	public partial class MovementPlayer : Player
 	{
 		TimeSince timeSinceDied;
+
 		public MovementPlayer()
 		{
 		}
@@ -38,7 +39,7 @@ namespace Core
 
 				return;
 			}
-			
+
 			var controller = GetActiveController();
 			controller?.Simulate( client, this, GetActiveAnimator() );
 		}

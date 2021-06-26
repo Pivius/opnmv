@@ -25,7 +25,6 @@ namespace OMMovement
 			return Time.Now > (WalljumpTime + WalljumpDelay);
 		}
 
-
 		public virtual bool PressedWalljumpButton(MovementPlayer player)
 		{
 			return player.KeyPressed(WALLJUMP_BUTTONS);
@@ -38,12 +37,11 @@ namespace OMMovement
 
 		public virtual TraceResult Trace(Vector3 position, Vector3 mins, Vector3 maxs, Vector3 direction, Entity Pawn)
 		{
-			Vector3 perimeter_pos = position - (Vector3.One * direction * 23);
 			float walljump_distance = WalljumpDistance - maxs.x; // Works under the presumption the hulls x and y are identical
-			Vector3 obb_trace = Vector3.One * walljump_distance;
+			Vector3 perimeter_pos = position - (Vector3.One * direction * maxs.x);
+			Vector3 obb_trace = (Vector3.One * walljump_distance).WithZ(0);
 			TraceResult trace;
 
-			obb_trace.z = 0;
 			perimeter_pos.x = MathX.Clamp(perimeter_pos.x, position.x + mins.x, position.x + maxs.x);
 			perimeter_pos.y = MathX.Clamp(perimeter_pos.y, position.y + mins.y, position.y + maxs.y);
 			perimeter_pos.z = position.z;
