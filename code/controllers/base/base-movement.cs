@@ -293,13 +293,17 @@ namespace OMMovement
 					Properties.MoveState = STATE.INAIR;
 				}
 
-				base.CategorizePosition(bStayOnGround);
+				// FinishGravity
+				if (!IsTouchingLadder)
+					Velocity = Gravity.AddGravity(Properties.Gravity * 0.5f, Velocity);
 
 				if (OnGround())
 				{
 					AddSlopeSpeed();
 					Velocity = Velocity.WithZ(0);
 				}
+
+				base.CategorizePosition(bStayOnGround);
 			}
 			return false;
 		}
@@ -309,10 +313,6 @@ namespace OMMovement
 		/// </summary>
 		public virtual void EndMove()
 		{
-			// FinishGravity
-			if (!IsTouchingLadder)
-				Velocity = Gravity.AddGravity(Properties.Gravity * 0.5f, Velocity);
-
 			SaveGroundPos();
 			Properties.OldVelocity = Velocity;
 		}
