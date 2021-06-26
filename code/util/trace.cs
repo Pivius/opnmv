@@ -12,7 +12,7 @@ namespace Core
 				DebugOverlay.Box(duration, start, mins, maxs, color);
 		}
 
-		public static TraceResult Hull(Vector3 start, Vector3 end, Vector3 mins, Vector3 maxs, Entity pawn, float lift_feet = 0.0f, bool debug = false)
+		public static TraceResult Hull(Vector3 start, Vector3 end, Vector3 mins, Vector3 maxs, Entity pawn, float lift_feet = 0.0f)
 		{
 			if (lift_feet > 0)
 			{
@@ -29,18 +29,10 @@ namespace Core
 						.Ignore(pawn)
 						.Run();
 
-			if (debug)
-			{
-				DebugHull(5.0f, start, mins, maxs, new Color(100,255,100));
-				DebugHull(5.0f, end, mins, maxs, new Color(255,100,100));
-				DebugHull(5.0f, end, mins*0.25f, maxs*0.25f, new Color(255,100,100));
-				DebugOverlay.Line(start, end, 5.0f);
-			}
-
 			return tr;
 		}
 
-		public static TraceResult PlayerBBox(Vector3 start, Vector3 end, MovementController controller, float lift_feet = 0.0f, bool debug = false)
+		public static TraceResult PlayerBBox(Vector3 start, Vector3 end, MovementController controller, float lift_feet = 0.0f)
 		{
 			Vector3 maxs = controller.GetPlayerMaxs();
 			Vector3 mins = controller.GetPlayerMins();
@@ -60,14 +52,6 @@ namespace Core
 						.Ignore(controller.Pawn)
 						.Run();
 
-			if (debug)
-			{
-				DebugHull(5.0f, start, mins, maxs, new Color(100,255,100));
-				DebugHull(5.0f, end, mins, maxs, new Color(255,100,100));
-				DebugHull(5.0f, end, mins*0.25f, maxs*0.25f, new Color(255,100,100));
-				DebugOverlay.Line(start, end, 5.0f);
-			}
-
 			return tr;
 		}
 
@@ -81,6 +65,30 @@ namespace Core
 
 			var tr = Trace.Ray(start, end)
 						.Size(mins, maxs);
+
+			return tr;
+		}
+
+		public static TraceResult PlayerLine(Vector3 start, Vector3 end, Entity pawn)
+		{
+			var tr = Trace.Ray(start, end)
+						.HitLayer(CollisionLayer.All, false)
+						.HitLayer(CollisionLayer.Solid, true)
+						.HitLayer(CollisionLayer.GRATE, true)
+						.HitLayer(CollisionLayer.PLAYER_CLIP, true)
+						.Ignore(pawn)
+						.Run();
+
+			return tr;
+		}
+
+		public static Trace NewLine(Vector3 start, Vector3 end)
+		{
+			var tr = Trace.Ray(start, end)
+						.HitLayer(CollisionLayer.All, false)
+						.HitLayer(CollisionLayer.Solid, true)
+						.HitLayer(CollisionLayer.GRATE, true)
+						.HitLayer(CollisionLayer.PLAYER_CLIP, true);
 
 			return tr;
 		}

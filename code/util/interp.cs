@@ -18,7 +18,6 @@ namespace Core
 		public float Duration {get; set;}
 		public float StartTime {get; set;}
 		public float CurrentTime {get; set;}
-		public float DeltaTime {get; set;} = 0.0f;
 		public Func<float, float, float, float, float> Easing {get; set;}
 
 		public Interp(object start, object end, float duration, float dt, Func<float, float, float, float, float> easing)
@@ -32,7 +31,6 @@ namespace Core
 			SetEndValue(end);
 			Duration = duration;
 			Easing = easing;
-			DeltaTime = dt;
 			CurrentTime = 0;
 			StartTime = 0;
 		}
