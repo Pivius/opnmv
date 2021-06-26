@@ -95,36 +95,31 @@ namespace Core
 
 		public void DoWalk( Rotation idealRotation )
 		{
-			//
-			// These tweak the animation speeds to something we feel is right,
-			// so the foot speed matches the floor speed. Your art should probably
-			// do this - but that ain't how we roll
-			//
-			SetParam( "walkspeed_scale", 2.0f / 190.0f );
-			SetParam( "runspeed_scale", 2.0f / 320.0f );
-			SetParam( "duckspeed_scale", 2.0f / 80.0f );
+			// Move Speed
+			{
+				var dir = Velocity;
+				var forward = idealRotation.Forward.Dot( dir );
+				var sideward = idealRotation.Right.Dot( dir );
 
-			//
-			// Work out our movement relative to our body rotation
-			//
-			var moveDir = WishVelocity;
-			var forward = idealRotation.Forward.Dot( moveDir );
-			var sideward = idealRotation.Right.Dot( moveDir );
+				var angle = MathF.Atan2( sideward, forward ).RadianToDegree().NormalizeDegrees();
 
-			
-			var angle = MathF.Atan2( sideward, forward ).RadianToDegree().NormalizeDegrees();
-			//DebugOverlay.Text( Pos, $"{angle}" );
-			SetParam( "move_direction", angle );
-			
+				SetParam( "move_direction", angle );
+				SetParam( "move_speed", Velocity.Length );
+				SetParam( "move_groundspeed", Velocity.WithZ( 0 ).Length );
+			}
 
-			//
-			// Set our speeds on the animgraph
-			//
-			var speedScale = Pawn.Scale;
+			// Wish Speed
+			{
+				var dir = WishVelocity;
+				var forward = idealRotation.Forward.Dot( dir );
+				var sideward = idealRotation.Right.Dot( dir );
 
-			SetParam( "forward", forward );
-			SetParam( "sideward", sideward );
-			SetParam( "wishspeed", speedScale > 0.0f ? WishVelocity.Length / speedScale : 0.0f );
+				var angle = MathF.Atan2( sideward, forward ).RadianToDegree().NormalizeDegrees();
+
+				SetParam( "wish_direction", angle );
+				SetParam( "wish_speed", WishVelocity.Length );
+				SetParam( "wish_groundspeed", WishVelocity.WithZ( 0 ).Length );
+			}
 		}
 
 		public override void OnEvent( string name )
