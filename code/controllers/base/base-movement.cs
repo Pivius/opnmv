@@ -141,7 +141,6 @@ namespace OMMovement
 			{
 				ClearGroundEntity();
 				Velocity = Velocity.WithZ(100);
-
 				return;
 			}
 			
@@ -149,9 +148,7 @@ namespace OMMovement
 				return;
 
 			ClearGroundEntity();
-			Velocity = Velocity.WithZ( Velocity.z + Properties.JumpPower );
-			Velocity = Gravity.AddGravity(Properties.Gravity * 0.5f, Velocity);
-
+			Velocity = Gravity.AddGravity(Properties.Gravity * 0.5f, Velocity.WithZ(Properties.JumpPower));
 			AddEvent( "jump" );
 		}
 
@@ -161,7 +158,6 @@ namespace OMMovement
 			{
 				Velocity = LadderNormal * 100.0f;
 				IsTouchingLadder = false;
-
 				return;
 			}
 
@@ -229,7 +225,6 @@ namespace OMMovement
 			{
 				Velocity = Gravity.AddGravity(Properties.Gravity * 0.5f, Velocity);
 				Velocity += new Vector3( 0, 0, BaseVelocity.z ) * Time.Delta;
-
 				BaseVelocity = BaseVelocity.WithZ( 0 );
 			}
 
