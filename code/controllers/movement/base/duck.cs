@@ -236,7 +236,7 @@ namespace OMMovement
 				// UNDUCK (or attempt to...)
 				else
 				{
-					if ((Controller.Velocity.z < 0.0f) && IsDucked)
+					if ((Controller.Velocity.z <= 0.0f) && IsDucked)
 					{
 						InDuckJump = true;
 
