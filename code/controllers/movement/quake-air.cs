@@ -38,16 +38,16 @@ namespace OMMovement
 				float vel_length;
 				float dot_vel;
 				float z_speed = velocity.z;
-				float k = 32;
+				float air_control_speed = 32;
 				
 				velocity = velocity.WithZ(0);
 				vel_length = velocity.Length;
 				velocity = velocity.Normal;
 				dot_vel = velocity.Dot(strafe_dir);
-				k *= (air_control * dot_vel * dot_vel * Time.Delta);
+				air_control_speed *= (air_control * dot_vel * dot_vel * Time.Delta);
 
 				if (dot_vel > 0)
-					velocity = ((velocity * vel_length) + (strafe_dir * k)).Normal;
+					velocity = ((velocity * vel_length) + (strafe_dir * air_control_speed)).Normal;
 
 				velocity *= vel_length;
 				velocity = velocity.WithZ(z_speed);
