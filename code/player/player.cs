@@ -10,6 +10,7 @@ namespace Core
 {
 	public partial class MovementPlayer : Player
 	{
+		public Trail Trail;
 		protected ulong SpawnButtons = ((ulong) InputButton.Forward | (ulong) InputButton.Right | (ulong) InputButton.Left | (ulong) InputButton.Back | (ulong) InputButton.Jump);
 		public TimeSince timeSinceDied;
 
