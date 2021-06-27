@@ -8,6 +8,8 @@ namespace Core
 {
 	public partial class MovementPlayer : Player
 	{
+		ulong Buttons;
+		ulong OldButtons;
 		public ulong[] ValidMoveButtons =
 		{
 			(ulong)InputButton.Jump,
@@ -19,16 +21,6 @@ namespace Core
 			(ulong)InputButton.Run,
 			(ulong)InputButton.Walk
 		};
-		private void ScaleSensitivity(ref Angles view_angles, Vector2 previous_delta, Vector2 mouse_delta)
-		{
-			MouseInput.MouseMove(ref view_angles, ref previous_delta, mouse_delta);
-			PreviousDelta = previous_delta;
-		}
-
-		[Event.BuildInput] private void ProcessSensitivty(InputBuilder input)
-		{
-			ScaleSensitivity(ref input.ViewAngles, PreviousDelta, new Vector2(Input.MouseDelta.x, Input.MouseDelta.y));
-		}
 
 		private void ProcessMoveButtons()
 		{

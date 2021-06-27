@@ -14,11 +14,12 @@ namespace Core
 		PARKOUR
 	}
 
-	public partial class MovementPlayer
+	public partial class MovementPlayer : Player
 	{
-		[ConVar.ClientData] public static int opnmv_mode { get; set; } = 0;
-		public int MoveMode{ get; set; } = 0;
-		public List<PawnController> MoveControllers = new List<PawnController>
+		[ConVar.ClientData] public static int opnmv_mode {get; set;} = 0;
+		[Net] public int MoveMode {get; private set;} = 0;
+
+		public static List<PawnController> MoveControllers{get; private set;} = new List<PawnController>
 		{
 			new DefaultController(),
 			new QuakeController(),
@@ -26,27 +27,31 @@ namespace Core
 			new ParkourController()
 		};
 
-		public override PawnController GetActiveController()
+		public virtual PawnController GetActiveController(Client client)
 		{
 			if ( DevController != null ) return DevController;
 
-			SetMoveMode();
-
+			SetMoveMode(client);
 			return Controller;
 		}
 
-		public void SetMoveMode()
+		public void SetMoveMode(Client client)
 		{
-			var mode = Int32.Parse(ConsoleSystem.GetValue("opnmv_mode"));
-			
-			if (mode != MoveMode)
+			if (IsServer)
 			{
-				var controller_count = MoveControllers.Count - 1;
-				var clamped_mode = (int)MathX.Clamp(mode, 0, controller_count);
+				int mode = 0;
 
-				ConsoleSystem.Run("opnmv_mode", clamped_mode);
-				MoveMode = clamped_mode;
-				Controller = MoveControllers[MoveMode];
+				Int32.TryParse(client.GetUserString("opnmv_mode"), out mode);
+		
+				if (mode != MoveMode)
+				{
+					var controller_count = MoveControllers.Count - 1;
+
+					mode = (int)MathX.Clamp(mode, 0, controller_count);
+					client.SendCommandToClient("opnmv_mode " + mode);
+					MoveMode = mode;
+					Controller = MoveControllers[MoveMode];
+				}
 			}
 		}
 	}
