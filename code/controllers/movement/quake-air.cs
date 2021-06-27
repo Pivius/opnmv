@@ -13,13 +13,11 @@ namespace OMMovement
 
 		public virtual float AdjustAccel(float dot_vel, float accel, float strafe_accel, float air_stop_accel)
 		{
-			if (dot_vel < 0.0f || Input.Forward != 0.0f)
+			if (dot_vel < 0.0f || (Input.Forward != 0.0f && Input.Left == 0))
 				accel = air_stop_accel;
 
 			if (Input.Left != 0 && Input.Forward == 0)
 				accel = strafe_accel;
-			else if (Input.Forward != 0.0f && Input.Left == 0)
-				accel = air_stop_accel;
 
 			return accel;
 		}
