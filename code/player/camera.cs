@@ -78,6 +78,7 @@ namespace Core
 			FieldOfView = Single.Parse(ConsoleSystem.GetValue("fov_desired"));
 			Viewer = pawn;
 			lastPos = Pos;
+			ZNear = 1;
 
 			foreach (var cl in Client.All)
 			{
