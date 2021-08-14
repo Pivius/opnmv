@@ -51,8 +51,15 @@ namespace Core
 					client.SendCommandToClient("opnmv_mode " + mode);
 					MoveMode = mode;
 					Controller = MoveControllers[MoveMode];
+					ClientMode(mode);
 				}
 			}
+		}
+
+		[ClientRpc] private void ClientMode(int mode)
+		{
+			MoveMode = mode;
+			Controller = MoveControllers[MoveMode];
 		}
 	}
 }

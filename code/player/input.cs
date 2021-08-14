@@ -8,8 +8,8 @@ namespace Core
 {
 	public partial class MovementPlayer : Player
 	{
-		ulong Buttons;
-		ulong OldButtons;
+		ulong Buttons {get; set;}
+		ulong OldButtons {get; set;}
 		public ulong[] ValidMoveButtons =
 		{
 			(ulong)InputButton.Jump,

@@ -75,7 +75,6 @@ namespace Core
 				return;
 			}
 
-			ProcessMoveButtons();
 			var controller = GetActiveController(client);
 			controller?.FrameSimulate(client, this, GetActiveAnimator());
 			Event.Run("Simulate.Client", client);
