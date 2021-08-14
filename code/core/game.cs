@@ -37,5 +37,16 @@ namespace Core
 			client.Pawn = player;
 			player.Respawn();
 		}
+
+		public override void Simulate(Client client)
+		{
+			client.Pawn?.Simulate(client);
+		}
+
+		public override void FrameSimulate(Client client)
+		{
+			Host.AssertClient();
+			client.Pawn?.FrameSimulate(client);
+		}
 	}
 }
