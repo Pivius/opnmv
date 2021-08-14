@@ -5,7 +5,7 @@ using Core;
 
 namespace OMMovement
 {
-	public class Walljump
+	public partial class Walljump : NetworkComponent
 	{
 		// EMM Walljump
 		public float WalljumpDistance = 30;
@@ -13,7 +13,7 @@ namespace OMMovement
 		public float WalljumpSideVelocity = 260.0f;
 		public float WalljumpUpVelocity = 200.0f;
 		public float WalljumpAngle = 58.0f;
-		public float WalljumpTime{get; set;} = 0;
+		[Net, Predicted] public float WalljumpTime {get; set;} = 0;
 		public bool CanWalljump = true;
 		public bool CanWalljumpSky = false;
 		protected ulong WALLJUMP_BUTTONS = ((ulong) InputButton.Forward | (ulong) InputButton.Right | (ulong) InputButton.Left | (ulong) InputButton.Back | (ulong) InputButton.Jump);

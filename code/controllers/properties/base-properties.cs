@@ -3,7 +3,7 @@ using System;
 
 namespace OMMovement
 {
-	public class BaseProperties
+	public class BaseProperties : NetworkComponent
 	{
 		// # Movement Properties
 
@@ -19,7 +19,7 @@ namespace OMMovement
 		public virtual float Gravity{get; set;} = 800.0f;
 		public virtual float JumpPower{get; set;} = 268.3281572999747f * 1.2f;
 		public virtual float StepSize{get; set;} = 16.0f;
-		public virtual float StandableAngle{get; set;} = 1;
+		public virtual float StandableAngle{get; set;} = 45;
 		public virtual float FallDamageMultiplier{get; set;} = 0.0563f;
 		public virtual bool AutoJump{get; set;} = true;
 		public virtual bool AllowAutoMovement{get; set;} = true;
@@ -51,7 +51,6 @@ namespace OMMovement
 
 		// # View Offset
 
-		public virtual float ViewOffset{get; set;} = 64.0f;
 		public virtual float StandViewOffset{get; set;} = 64.0f;
 		public virtual float DuckViewOffset{get; set;} = 28.0f;
 		public virtual float DeadViewOffset{get; set;} = 14.0f;
@@ -59,13 +58,10 @@ namespace OMMovement
 
 		// # Player Hulls
 
-		public virtual Vector3 OBBMins{get; set;} = new Vector3(-16, -16, 0);
-		public virtual Vector3 OBBMaxs{get; set;} = new Vector3(16, 16, 72);
 		public virtual Vector3 StandMins{get; set;} = new Vector3(-16, -16, 0);
 		public virtual Vector3 StandMaxs{get; set;} = new Vector3(16, 16, 72);
 		public virtual Vector3 DuckMins{get; set;} = new Vector3(-16, -16, 0);
 		public virtual Vector3 DuckMaxs{get; set;} = new Vector3(16, 16, 32);
-		public virtual Vector3 OldVelocity {get; set;}
 
 
 		// # Quake Properties

@@ -5,18 +5,48 @@ using System;
 
 namespace OMMovement
 {
-	public class Duck : NetworkComponent
+	public partial class Duck : NetworkComponent
 	{
 		protected MovementController Controller;
-		public float DuckTime{get; set;} = 0.0f;
-		public bool IsDucked{get; set;} = false;
-		public bool IsDucking{get; set;} = false;
-		public bool InDuckJump{get; set;} = false;
+		private TimeAssociatedMap<float> ClientDuckTime;
+		private TimeSince ServerDuckTime;
+		public float DuckTime 
+		{
+			get
+			{
+				if (Host.IsServer)
+					return (float) ServerDuckTime;
+				else if(Host.IsClient)
+					return MathF.Max(0, (Time.Now + ClientDuckTime.LastValue) - ClientDuckTime.LastTime);
+				return 0;
+			}
+
+			set
+			{
+				if (Host.IsServer)
+					ServerDuckTime = value;
+				else if(Host.IsClient)
+					ClientDuckTime.Set(value);
+			}
+		}
+		public bool IsDucked {get; set;}
+		public bool InDuckJump {get; set;}
 		public float DUCK_TIME{get; set;} = 1000.0f;
 
 		public Duck(MovementController controller)
 		{
 			Controller = controller;
+			ClientDuckTime = new TimeAssociatedMap<float>(1, GetDuckTime);
+		}
+
+		private float GetDuckTime()
+		{
+			return (float) ServerDuckTime;
+		}
+
+		private bool IsDucking()
+		{
+			return ((DuckTime <= Controller.Properties.UnDuckSpeed && IsDucked) || (DuckTime <= Controller.Properties.DuckSpeed && !IsDucked));
 		}
 
 		private float SimpleSpline(float value)
@@ -120,11 +150,10 @@ namespace OMMovement
 			
 			InDuckJump = false;
 			IsDucked = false;
-			IsDucking = false;
-			DuckTime = 0.0f;
+			DuckTime = 99;
 			new_origin += hull_delta;
 			trace = TraceUtil.PlayerBBox(Controller.Position, new_origin, Controller);
-			Controller.Properties.ViewOffset = Controller.GetPlayerViewOffset(false);
+			Controller.ViewOffset = Controller.GetPlayerViewOffset(false);
 			Controller.Position = trace.EndPos;
 			Controller.CategorizePosition(Controller.OnGround());
 		}
@@ -132,9 +161,8 @@ namespace OMMovement
 		public void FinishUnDuck()
 		{
 			IsDucked = false;
-			IsDucking = false;
-			Controller.Properties.ViewOffset = Controller.GetPlayerViewOffset(false);
-			DuckTime = 0.0f;
+			DuckTime = 99;
+			Controller.ViewOffset = Controller.GetPlayerViewOffset(false);
 			Controller.Position = GetUnDuckOrigin(true);
 			Controller.CategorizePosition(Controller.OnGround());
 		}
@@ -148,19 +176,7 @@ namespace OMMovement
 			float stand_view = Controller.GetPlayerViewOffset(false);
 			float view_offset = ((duck_view - more) * frac) + (stand_view * (1 - frac));
 
-			Controller.Properties.ViewOffset = view_offset;
-		}
-
-		public virtual void ReduceTimers()
-		{
-			float frame_msec = 1000.0f * Time.Delta;
-
-			if (DuckTime > 0)
-			{
-				DuckTime -= frame_msec;
-				if (DuckTime < 0)
-					DuckTime = 0;
-			}
+			Controller.ViewOffset = view_offset;
 		}
 
 		public void FinishDuck()
@@ -171,8 +187,8 @@ namespace OMMovement
 					InDuckJump = false;
 
 				IsDucked = true;
-				IsDucking = false;
-				Controller.Properties.ViewOffset = Controller.GetPlayerViewOffset(true);
+				DuckTime = 99;
+				Controller.ViewOffset = Controller.GetPlayerViewOffset(true);
 
 				if (Controller.OnGround())
 				{
@@ -197,46 +213,40 @@ namespace OMMovement
 			bool duck_keydown = Controller.GetPlayer().KeyDown(InputButton.Duck);
 			bool in_duck = IsDucked;
 			float time_to_unduck_inv = Controller.Properties.DuckSpeed - Controller.Properties.UnDuckSpeed;
-
-			if (duck_keydown || IsDucking || in_duck)
+			
+			if (duck_keydown || IsDucking() || in_duck)
 			{
 				// DUCK
 				if (duck_keydown)
 				{
-					// Have the duck button pressed, but the player currently isn't in the duck position.
-					if (Controller.GetPlayer().KeyPressed(InputButton.Duck) && !in_duck)
-					{
-						DuckTime = DUCK_TIME;
-						IsDucking = true;
-					}
-					else if (Controller.GetPlayer().KeyPressed(InputButton.Duck) && IsDucking)
-					{
-						FinishUnDuck();
-						DuckTime = DUCK_TIME;
-						IsDucking = true;
-					}
-					
-					// The player is in duck transition
-					if (IsDucking)
-					{
-						float duck_ms = System.MathF.Max(0.0f, DUCK_TIME - DuckTime);
-						float duck_second = duck_ms * 0.001f;
-						// Finish in duck transition when transition time is over, in "duck", in air.
-						if ((duck_second > Controller.Properties.DuckSpeed) || in_duck || in_air)
+
+						// Have the duck button pressed, but the player currently isn't in the duck position.
+						if (Controller.GetPlayer().KeyPressed(InputButton.Duck) && !in_duck)
 						{
-							FinishDuck();
+							DuckTime = 0;
+						}
+						else if (Controller.GetPlayer().KeyPressed(InputButton.Duck) && IsDucking())
+						{
+							FinishUnDuck();
+							DuckTime = 0;
+						}
+						
+						// The player is in duck transition
+						if (IsDucking() && !in_duck && !in_air)
+						{
+							// Calc parametric time
+							SetDuckedEyeOffset(SimpleSpline(DuckTime / Controller.Properties.DuckSpeed));
 						}
 						else
 						{
-							// Calc parametric time
-							SetDuckedEyeOffset(SimpleSpline(duck_second / Controller.Properties.DuckSpeed));
+							FinishDuck();
 						}
-					}
+			
 				}
 				// UNDUCK (or attempt to...)
 				else
 				{
-					if ((Controller.Velocity.z <= 0.0f) && IsDucked)
+					if ((Controller.Velocity.z < 0.0f) && IsDucked)
 					{
 						InDuckJump = true;
 
@@ -248,24 +258,24 @@ namespace OMMovement
 
 					// Try to unduck unless automovement is not allowed
 					// NOTE: When not onground, you can always unduck
-					if (Controller.Properties.AllowAutoMovement || in_air || IsDucking)
+					if (Controller.Properties.AllowAutoMovement || in_air || IsDucking())
 					{
 						if (Controller.GetPlayer().KeyReleased(InputButton.Duck))
 						{
 							if (in_duck)
 							{
-								DuckTime = DUCK_TIME;
+								DuckTime = 0;
 							}
-							else if (IsDucking && !in_duck)
+							else if (IsDucking() && !in_duck)
 							{
 								// Invert time if release before fully ducked!!!
-								float unduck_ms = 1000.0f * Controller.Properties.UnDuckSpeed;
-								float duck_ms = 1000.0f * Controller.Properties.DuckSpeed;
-								float elapsed_ms = DUCK_TIME - DuckTime;
-								float frac_ducked = elapsed_ms / duck_ms;
-								float remaining_unduck_ms = frac_ducked * duck_ms;
+								float unduck_time = Controller.Properties.UnDuckSpeed;
+								float duck_time = Controller.Properties.DuckSpeed;
+								float elapsed_time = DuckTime;
+								float frac_ducked = elapsed_time / duck_time;
+								float remaining_unduck_time = frac_ducked * duck_time;
 
-								DuckTime = DUCK_TIME - duck_ms + remaining_unduck_ms;
+								DuckTime = remaining_unduck_time;
 							}
 						}
 						
@@ -274,36 +284,28 @@ namespace OMMovement
 						if (CanUnDuck())
 						{
 							// or unducking
-							if (IsDucking || IsDucked)
+							if (IsDucking() && IsDucked && !in_air)
 							{
-								float duck_ms = System.MathF.Max(0.0f, DUCK_TIME - DuckTime);
-								float duck_second = duck_ms * 0.001f;
+								// Calc parametric time
+								float duck_frac = SimpleSpline(1.0f - (DuckTime / Controller.Properties.UnDuckSpeed));
 								
-								// Finish ducking immediately if duck time is over or not on ground
-								if (duck_second > Controller.Properties.UnDuckSpeed || in_air)
-								{
-									FinishUnDuck();
-								}
-								else
-								{
-									// Calc parametric time
-									float duck_frac = SimpleSpline(1.0f - (duck_second / Controller.Properties.UnDuckSpeed));
-									
-									SetDuckedEyeOffset(duck_frac);
-									IsDucking = true;
-								}
+								SetDuckedEyeOffset(duck_frac);
+							}
+							else if ((!IsDucking() || in_air) && IsDucked)
+							{
+								FinishUnDuck();
 							}
 						}
 						else
 						{
 							// Still under something where we can't unduck, so make sure we reset this timer so
 							//  that we'll unduck once we exit the tunnel, etc.
-							if (DuckTime != DUCK_TIME)
+							if (DuckTime != 0)
 							{
+								
 								SetDuckedEyeOffset(1.0f);
-								DuckTime = DUCK_TIME;
+								DuckTime = 0;
 								IsDucked = true;
-								IsDucking = false;
 								Controller.SetTag( "ducked" );
 							}
 						}
@@ -318,7 +320,8 @@ namespace OMMovement
 				}
 			}
 			
-			ReduceTimers();
+			
+			//ReduceTimers();
 
 			if (IsDucked)
 				Controller.SetTag( "ducked" );

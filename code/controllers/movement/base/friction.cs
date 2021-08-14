@@ -5,7 +5,7 @@ using Sandbox;
 
 namespace OMMovement
 {
-	public class Friction : Accelerate
+	public partial class Friction : Accelerate
 	{
 		// # Source Movement Friction
 		

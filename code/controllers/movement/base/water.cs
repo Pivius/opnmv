@@ -4,13 +4,13 @@ using Core;
 
 namespace OMMovement
 {
-	public class Water : Accelerate
+	public partial class Water : Accelerate
 	{
 		// # Source Water Movement
 
-		public float JumpTime {get; set;}
-		public Vector3 JumpVel {get; set;}
-		public float EntryTime {get; set;}
+		[Net, Predicted] public float JumpTime {get; set;}
+		[Net, Predicted] public Vector3 JumpVel {get; set;}
+		[Net, Predicted] public float EntryTime {get; set;}
 		public float MaxJumpLedge {get; private set;} = 8.0f;
 		public float SinkSpeed {get; private set;} = 60.0f;
 		public float JumpHeight {get; set;} = 256.0f;
@@ -37,7 +37,7 @@ namespace OMMovement
 						
 						if (trace.Fraction < 1.0f) // solid at waist
 						{
-							trace_start = trace_start.WithZ(position.z + controller.Properties.ViewOffset + MaxJumpLedge); 
+							trace_start = trace_start.WithZ(position.z + controller.ViewOffset + MaxJumpLedge); 
 							trace_end = trace_start + (view_dir * 24.0f);
 							JumpVel = trace.Normal * -50.0f;
 							trace = TraceUtil.PlayerBBox(trace_start, trace_end, controller);

@@ -11,6 +11,10 @@ namespace OMMovement
 		public BaseProperties Properties;
 		public Vector3 LadderNormal;
 		public bool IsTouchingLadder = false;
+		public float ViewOffset{get; set;} = 64.0f;
+		public Vector3 OBBMins{get; set;} = new Vector3(-16, -16, 0);
+		public Vector3 OBBMaxs{get; set;} = new Vector3(16, 16, 72);
+		public Vector3 OldVelocity{get; set;}
 
 		public MovementController()
 		{
@@ -30,12 +34,12 @@ namespace OMMovement
 		}
 		public override TraceResult TraceBBox(Vector3 start, Vector3 end, float liftFeet = 0.0f)
 		{
-			return TraceBBox(start, end, Properties.OBBMins, Properties.OBBMaxs, liftFeet);
+			return TraceBBox(start, end, OBBMins, OBBMaxs, liftFeet);
 		}
 
 		public override BBox GetHull()
 		{
-			return new BBox(Properties.OBBMins, Properties.OBBMaxs);
+			return new BBox(OBBMins, OBBMaxs);
 		}
 
 		public virtual Vector3 GetPlayerMins(bool is_ducked)
@@ -65,13 +69,13 @@ namespace OMMovement
 
 		public virtual float GetViewOffset()
 		{
-			return (Properties.ViewOffset * Pawn.Scale);
+			return (ViewOffset * Pawn.Scale);
 		}
 
 		public override void SetBBox(Vector3 mins, Vector3 maxs)
 		{
-			Properties.OBBMins = mins;
-			Properties.OBBMaxs = maxs;
+			OBBMins = mins;
+			OBBMaxs = maxs;
 		}
 
 		public override void UpdateBBox()
@@ -79,7 +83,7 @@ namespace OMMovement
 			var mins = GetPlayerMins();
 			var maxs = GetPlayerMaxs();
 
-			if (Properties.OBBMins != mins || Properties.OBBMaxs != maxs)
+			if (OBBMins != mins || OBBMaxs != maxs)
 			{
 				SetBBox(mins, maxs);
 			}
@@ -97,12 +101,15 @@ namespace OMMovement
 
 		public override void FrameSimulate()
 		{
+			Duck.TryDuck();
+			//BetterLog.Info(Duck.IsDucked);
 			EyeRot = Input.Rotation;
+			EyePosLocal = Vector3.Up * GetViewOffset() * Pawn.Scale;
+			WishVelocity = WishVel(Properties.MaxMove);
 		}
 
 		public override void Simulate()
 		{
-			
 			if (StartMove()) 
 				return;
 

@@ -56,13 +56,79 @@ namespace OMMovement
 			}
 		}
 
+		public virtual void CategorizePosition(bool bStayOnGround)
+		{
+			SurfaceFriction = 1.0f;
+
+			var point = Position - Vector3.Up * 2;
+			var vBumpOrigin = Position;
+
+			//
+			//  Shooting up really fast.  Definitely not on ground trimed until ladder shit
+			//
+			float MaxNonJumpVelocity = 140.0f;
+			bool bMovingUpRapidly = Velocity.z > MaxNonJumpVelocity;
+			bool bMovingUp = Velocity.z > 0;
+
+			bool bMoveToEndPos = false;
+
+			if ( GroundEntity != null ) // and not underwater
+			{
+				bMoveToEndPos = true;
+				point.z -= StepSize;
+			}
+			else if ( bStayOnGround )
+			{
+				bMoveToEndPos = true;
+				point.z -= StepSize;
+			}
+
+			if ( bMovingUpRapidly || Swimming ) // or ladder and moving up
+			{
+				base.ClearGroundEntity();
+				return;
+			}
+
+			var pm = TraceBBox( vBumpOrigin, point, 4.0f );
+
+			if ( pm.Entity == null || Vector3.GetAngle( Vector3.Up, pm.Normal ) > GroundAngle )
+			{
+				base.ClearGroundEntity();
+				bMoveToEndPos = false;
+
+				if ( Velocity.z > 0 )
+					SurfaceFriction = 0.25f;
+			}
+			else
+			{
+				base.UpdateGroundEntity( pm );
+			}
+
+			if ( bMoveToEndPos && !pm.StartedSolid && pm.Fraction > 0.0f && pm.Fraction < 1.0f )
+			{
+				Position = pm.EndPos;
+			}
+		}
+
+		public override void StepMove()
+		{
+			MoveHelper mover = new MoveHelper(Position, Velocity);
+			mover.Trace = mover.Trace.Size(OBBMins, OBBMaxs).Ignore(Pawn);
+			mover.MaxStandableAngle = Properties.StandableAngle;
+
+			mover.TryMoveWithStep(Time.Delta, Properties.StepSize);
+
+			Position = mover.Position;
+			Velocity = mover.Velocity;
+		}
+
 		/// <summary>
 		/// Does sliding when on a ramp or surf
 		/// </summary>
-		public override void TryPlayerMove()
+		public virtual void TryPlayerMove()
 		{
 			MoveHelper mover = new MoveHelper(Position, Velocity);
-			mover.Trace = mover.Trace.Size(Properties.OBBMins, Properties.OBBMaxs).Ignore(Pawn);
+			mover.Trace = mover.Trace.Size(OBBMins, OBBMaxs).Ignore(Pawn);
 			mover.MaxStandableAngle = Properties.StandableAngle;
 
 			mover.TryMove(Time.Delta);
@@ -77,6 +143,30 @@ namespace OMMovement
 			Velocity += BaseVelocity;
 			TryPlayerMove();
 			Velocity -= BaseVelocity;
+		}
+
+		public override void StayOnGround()
+		{
+			var start = Position + Vector3.Up * 2;
+			var end = Position + Vector3.Down * Properties.StepSize;
+
+			// See how far up we can go without getting stuck
+			var trace = TraceBBox(Position, start);
+			start = trace.EndPos;
+
+			// Now trace down from a known safe position
+			trace = TraceBBox(start, end);
+
+			if (trace.Fraction <= 0) return;
+			if (trace.Fraction >= 1) return;
+			if (trace.StartedSolid) return;
+			if (Vector3.GetAngle(Vector3.Up, trace.Normal) > Properties.StandableAngle) return;
+
+			// This is incredibly hacky. The real problem is that trace returning that strange value we can't network over.
+			// float flDelta = fabs(mv->GetAbsOrigin().z - trace.m_vEndPos.z);
+			// if (flDelta > 0.5f * DIST_EPSILON)
+
+			Position = trace.EndPos;
 		}
 
 		public override void WalkMove()
@@ -109,11 +199,11 @@ namespace OMMovement
 				if (pm.Fraction == 1)
 				{
 					Position = pm.EndPos;
-					base.StayOnGround();
+					StayOnGround();
 					return;
 				}
 
-				base.StepMove();
+				StepMove();
 			}
 			finally
 			{
@@ -121,7 +211,7 @@ namespace OMMovement
 				Velocity -= BaseVelocity;
 			}
 
-			base.StayOnGround();
+			StayOnGround();
 		}
 	
 		public virtual void CheckJumpButton()
@@ -139,7 +229,7 @@ namespace OMMovement
 			
 			if (Water.WaterLevel >= WATERLEVEL.Waist)
 			{
-				ClearGroundEntity();
+				base.ClearGroundEntity();
 				Velocity = Velocity.WithZ(100);
 				return;
 			}
@@ -147,9 +237,9 @@ namespace OMMovement
 			if (!OnGround())
 				return;
 
-			ClearGroundEntity();
+			base.ClearGroundEntity();
 			Velocity = Gravity.AddGravity(Properties.Gravity * 0.5f, Velocity.WithZ(Properties.JumpPower));
-			AddEvent( "jump" );
+			AddEvent("jump");
 		}
 
 		public override void CheckLadder()
@@ -166,7 +256,7 @@ namespace OMMovement
 			Vector3 end = start + (IsTouchingLadder ? (LadderNormal * -1.0f) : WishVelocity.Normal) * ladderDistance;
 
 			var pm = Trace.Ray(start, end)
-						.Size(Properties.OBBMins, Properties.OBBMaxs)
+						.Size(OBBMins, OBBMaxs)
 						.HitLayer(CollisionLayer.All, false)
 						.HitLayer(CollisionLayer.LADDER, true)
 						.Ignore(Pawn)
@@ -189,13 +279,13 @@ namespace OMMovement
 		/// </returns>
 		public virtual bool StartMove()
 		{
+			if (Host.IsServer)
+				Duck.TryDuck();
 			EyePosLocal = Vector3.Up * GetViewOffset() * Pawn.Scale;
-			EyePosLocal += TraceOffset;
 			EyeRot = Input.Rotation;
 			WishVelocity = WishVel(Properties.MaxMove);
 			UpdateBBox();
 			RestoreGroundPos();
-			Duck.TryDuck();
 			
 			if (Unstuck.TestAndFix())
 				return true;
@@ -216,7 +306,7 @@ namespace OMMovement
 		{
 			var player = GetPlayer();
 
-			Swimming = Water.CheckWater(Position, Properties.OBBMins, Properties.OBBMaxs, GetViewOffset(), Pawn);
+			Swimming = Water.CheckWater(Position, OBBMins, OBBMaxs, GetViewOffset(), Pawn);
 
 			//
 			// Start Gravity
@@ -224,8 +314,8 @@ namespace OMMovement
 			if (!Swimming && !IsTouchingLadder)
 			{
 				Velocity = Gravity.AddGravity(Properties.Gravity * 0.5f, Velocity);
-				Velocity += new Vector3( 0, 0, BaseVelocity.z ) * Time.Delta;
-				BaseVelocity = BaseVelocity.WithZ( 0 );
+				Velocity += new Vector3(0, 0, BaseVelocity.z) * Time.Delta;
+				BaseVelocity = BaseVelocity.WithZ(0);
 			}
 
 			if (Water.JumpTime > 0.0f)
@@ -309,7 +399,7 @@ namespace OMMovement
 		public virtual void EndMove()
 		{
 			SaveGroundPos();
-			Properties.OldVelocity = Velocity;
+			OldVelocity = Velocity;
 		}
 	}
 }

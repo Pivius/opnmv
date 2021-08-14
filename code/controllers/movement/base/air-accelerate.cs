@@ -4,7 +4,7 @@ using Sandbox;
 
 namespace OMMovement
 {
-	public class AirAccelerate
+	public partial class AirAccelerate : NetworkComponent
 	{
 		// # Source Movement Air Accel
 
